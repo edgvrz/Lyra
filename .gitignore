@@ -1,0 +1,21 @@
+# Compilación
+bin/
+obj/
+
+# Base de datos local
+*.db
+*.sqlite
+
+# Visual Studio / VS Code
+.vs/
+.vscode/
+
+# Archivos de usuario
+*.user
+*.suo
+
+# Uploads temporales
+wwwroot/uploads/
+
+# Logs
+*.log
