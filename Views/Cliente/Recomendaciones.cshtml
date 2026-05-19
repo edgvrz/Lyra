@@ -1,0 +1,182 @@
+@model List<Lyra.Models.Prenda>
+@using Lyra.Enums
+@{
+    ViewData["Title"] = "Recomendaciones";
+    var tipoCuerpo   = ViewBag.TipoCuerpo  as string ?? "";
+    var tonoPiel     = ViewBag.TonoPiel    as string ?? "";
+    var favIds       = ViewBag.FavoritosIds as List<int> ?? new List<int>();
+    var porCategoria = Model
+        .GroupBy(p => p.Categoria.ToString())
+        .OrderBy(g => g.Key)
+        .ToList();
+}
+<style>
+    .rec-wrap     { max-width:1100px; margin:0 auto; padding:2rem 1rem; }
+    .rec-header   { border-bottom:1px solid #ede9e3; padding-bottom:1.5rem; margin-bottom:1.5rem; }
+    .rec-title    { font-family:'Playfair Display',serif; font-size:2rem; color:#1a1a1a; margin:0; }
+    .rec-meta     { display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.8rem; }
+    .rec-grid     { display:grid; grid-template-columns:repeat(auto-fill,minmax(270px,1fr)); gap:1.5rem; }
+    .pcard        { background:#fff; border:1px solid #ede9e3; border-radius:16px; overflow:hidden; transition:transform .25s,box-shadow .25s; }
+    .pcard:hover  { transform:translateY(-4px); box-shadow:0 12px 32px rgba(0,0,0,.08); }
+    .pcard-img    { width:100%; height:280px; object-fit:cover; }
+    .pcard-img-ph { width:100%; height:280px; background:#f5f1eb; display:flex; align-items:center; justify-content:center; font-size:2.5rem; }
+    .pcard-body   { padding:1.1rem 1.25rem 1.25rem; }
+    .pcard-name   { font-family:'Playfair Display',serif; font-size:1.05rem; color:#1a1a1a; margin-bottom:.4rem; }
+    .pcard-precio { font-size:1.05rem; font-weight:500; color:#1a1a1a; }
+    .pcard-talla  { font-size:.78rem; color:#aaa; background:#f5f1eb; padding:.2rem .6rem; border-radius:20px; }
+    .tienda-badge { font-size:.72rem; color:#888; margin-top:.3rem; margin-bottom:.4rem; }
+    .btn-fav      { width:100%; background:none; border:1.5px solid #ddd; border-radius:10px;
+                    padding:.55rem; cursor:pointer; transition:all .2s;
+                    font-family:'DM Sans',sans-serif; font-size:.85rem; color:#555;
+                    display:flex; align-items:center; justify-content:center; gap:.4rem; }
+    .btn-fav:hover { border-color:#e84393; color:#e84393; }
+    .btn-fav.saved { background:#fff0f6; border-color:#e84393; color:#e84393; }
+    .filtros-bar  { display:flex; gap:.6rem; flex-wrap:wrap; align-items:flex-end;
+                    background:#fff; border:1px solid #ede9e3; border-radius:14px;
+                    padding:1rem 1.25rem; margin-bottom:1.75rem; }
+    .sec-header   { display:flex; align-items:center; gap:.75rem; margin-bottom:1.25rem; }
+    .sec-line     { flex:1; height:1px; background:#ede9e3; }
+    @@media(max-width:600px){ .rec-title{font-size:1.5rem;} }
+</style>
+
+<div class="rec-wrap">
+
+    <div class="rec-header">
+        <h1 class="rec-title">Para ti ✨</h1>
+        <div class="rec-meta">
+            <span class="pill pill-dark">@tipoCuerpo</span>
+            <span class="pill">🎨 Tono @tonoPiel</span>
+            <span class="pill">@Model.Count prenda@(Model.Count != 1 ? "s" : "")</span>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-3 py-2 px-3" style="font-size:.9rem">
+            ✓ @TempData["Success"]
+        </div>
+    }
+
+    <form method="get" asp-action="Recomendaciones" class="filtros-bar">
+        <div>
+            <label class="lyra-label">Categoría</label>
+            <select name="categoria" class="lyra-select" style="width:auto;min-width:160px">
+                <option value="">Todas</option>
+                @foreach (var cat in Enum.GetValues<CategoriaRopa>())
+                {
+                    <option value="@cat"
+                        selected="@(ViewBag.CategoriaActual?.ToString() == cat.ToString() ? "selected" : null)">
+                        @cat
+                    </option>
+                }
+            </select>
+        </div>
+        <div>
+            <label class="lyra-label">Precio máx. (S/)</label>
+            <input type="number" name="precioMax" class="lyra-input"
+                   style="width:130px" placeholder="Sin límite"
+                   value="@ViewBag.PrecioMax" min="0" step="10" />
+        </div>
+        <div style="display:flex;gap:.5rem;padding-top:1.3rem">
+            <button type="submit" class="btn-lyra btn-lyra-sm">Filtrar</button>
+            @if (ViewBag.CategoriaActual != null || ViewBag.PrecioMax != null)
+            {
+                <a asp-action="Recomendaciones" class="btn-lyra-ghost btn-lyra-sm">✕ Limpiar</a>
+            }
+        </div>
+    </form>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">👗</div>
+            <p class="empty-title">
+                @if (ViewBag.CategoriaActual != null || ViewBag.PrecioMax != null)
+                {
+                    <text>Sin resultados para ese filtro</text>
+                }
+                else
+                {
+                    <text>Aún no hay prendas para ti</text>
+                }
+            </p>
+            <p class="empty-sub">
+                @if (ViewBag.CategoriaActual != null || ViewBag.PrecioMax != null)
+                {
+                    <a asp-action="Recomendaciones" style="color:#1a1a1a">Ver todas las prendas</a>
+                }
+                else
+                {
+                    <text>Las tiendas están publicando. Vuelve pronto o
+                    <a asp-action="Favoritos" style="color:#1a1a1a">revisa tus guardadas</a>.</text>
+                }
+            </p>
+        </div>
+    }
+    else
+    {
+        @foreach (var seccion in porCategoria)
+        {
+            <div style="margin-bottom:2.5rem">
+                <div class="sec-header">
+                    <h2 style="font-family:'Playfair Display',serif;font-size:1.2rem;color:#1a1a1a;margin:0">
+                        @seccion.Key
+                    </h2>
+                    <span class="pill pill-cream">
+                        @seccion.Count() prenda@(seccion.Count() != 1 ? "s" : "")
+                    </span>
+                    <div class="sec-line"></div>
+                </div>
+
+                <div class="rec-grid">
+                    @foreach (var prenda in seccion)
+                    {
+                        var esFav = favIds.Contains(prenda.Id);
+                        <div class="pcard">
+                            @if (!string.IsNullOrEmpty(prenda.ImagenUrl))
+                            {
+                                <img src="@prenda.ImagenUrl" class="pcard-img" alt="@prenda.Nombre"
+                                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                                <div class="pcard-img-ph" style="display:none">👗</div>
+                            }
+                            else
+                            {
+                                <div class="pcard-img-ph">👗</div>
+                            }
+                            <div class="pcard-body">
+                                <p class="pcard-name">@prenda.Nombre</p>
+                                @if (prenda.Tienda != null)
+                                {
+                                    <p class="tienda-badge">
+                                        🏪 @prenda.Tienda.Nombre
+                                        @if (!string.IsNullOrEmpty(prenda.Tienda.Ciudad))
+                                        {
+                                            <span>· @prenda.Tienda.Ciudad</span>
+                                        }
+                                    </p>
+                                }
+                                <div style="display:flex;justify-content:space-between;align-items:center;margin:.5rem 0 .9rem">
+                                    <span class="pcard-precio">S/ @prenda.Precio.ToString("0.00")</span>
+                                    <span class="pcard-talla">@prenda.Talla</span>
+                                </div>
+                                <a asp-action="DetallePrenda" asp-route-id="@prenda.Id"
+                                   class="btn-lyra-ghost btn-lyra-sm w-100 mb-2"
+                                   style="justify-content:center;display:flex">
+                                    Ver detalle
+                                </a>
+                                <form asp-action="AgregarFavorito" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="prendaId" value="@prenda.Id" />
+                                    <button type="submit" class="btn-fav @(esFav ? "saved" : "")">
+                                        @(esFav ? "♥ Guardada" : "♡ Guardar")
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+
+</div>

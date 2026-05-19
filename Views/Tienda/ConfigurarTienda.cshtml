@@ -1,0 +1,57 @@
+@model Lyra.Models.Tienda
+@{ ViewData["Title"] = "Configurar Tienda"; bool esNueva = Model.Id == 0; }
+
+<div class="lyra-wrap-sm">
+    <div class="page-header">
+        <div>
+            <h1 class="lyra-title" style="font-size:1.9rem">
+                @(esNueva ? "Configura tu tienda" : "Editar tienda")
+            </h1>
+            <p style="color:#888;margin:.3rem 0 0;font-size:.9rem">
+                @(esNueva ? "Completa tu perfil de tienda para publicar prendas." : "Actualiza la información.")
+            </p>
+        </div>
+        @if (!esNueva)
+        {
+            <a asp-action="Dashboard" class="btn-lyra-ghost btn-lyra-sm">← Dashboard</a>
+        }
+    </div>
+
+    <form asp-action="ConfigurarTienda" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="lyra-card">
+            <div class="mb-3">
+                <label class="lyra-label">Nombre de la tienda *</label>
+                <input class="lyra-input" type="text" name="nombre"
+                       value="@Model.Nombre" placeholder="Ej. Moda Luna" required />
+            </div>
+            <div class="mb-3">
+                <label class="lyra-label">Descripción</label>
+                <textarea class="lyra-input" name="descripcion" rows="3"
+                          placeholder="Cuéntale a tus clientes de qué trata tu tienda...">@Model.Descripcion</textarea>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="lyra-label">Ciudad</label>
+                    <input class="lyra-input" type="text" name="ciudad"
+                           value="@Model.Ciudad" placeholder="Ej. Arequipa" />
+                </div>
+                <div class="col-md-6">
+                    <label class="lyra-label">Teléfono</label>
+                    <input class="lyra-input" type="tel" name="telefono"
+                           value="@Model.Telefono" placeholder="Ej. 959000000" />
+                </div>
+            </div>
+            <div class="mt-3">
+                <label class="lyra-label">Sitio web</label>
+                <input class="lyra-input" type="url" name="sitioWeb"
+                       value="@Model.SitioWeb" placeholder="https://..." />
+            </div>
+        </div>
+
+        <button type="submit" class="btn-lyra w-100" style="padding:.9rem">
+            @(esNueva ? "Crear mi tienda →" : "Guardar cambios")
+        </button>
+    </form>
+</div>

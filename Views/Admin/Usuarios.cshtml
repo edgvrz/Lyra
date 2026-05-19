@@ -1,0 +1,65 @@
+@using Lyra.DTOs
+@{ ViewData["Title"] = "Usuarios"; var usuarios = ViewBag.Usuarios as List<UsuarioAdminDto>; }
+
+<div class="lyra-wrap">
+    <div class="page-header">
+        <div>
+            <h1 class="lyra-title" style="font-size:1.9rem">Usuarios</h1>
+            <p style="color:#888;margin:.3rem 0 0;font-size:.9rem">@usuarios?.Count registrados</p>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-3 py-2 px-3" style="font-size:.9rem">✓ @TempData["Success"]</div>
+    }
+
+    <div class="lyra-card" style="padding:0;overflow:hidden">
+        <table style="width:100%;border-collapse:collapse;font-size:.88rem">
+            <thead>
+                <tr style="background:#faf8f5;border-bottom:1px solid #ede9e3">
+                    <th style="padding:.9rem 1.25rem;text-align:left;font-weight:500;color:#888;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em">Email</th>
+                    <th style="padding:.9rem 1rem;text-align:left;font-weight:500;color:#888;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em">Rol</th>
+                    <th style="padding:.9rem 1rem;text-align:left;font-weight:500;color:#888;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em">Nombre</th>
+                    <th style="padding:.9rem 1rem;text-align:left;font-weight:500;color:#888;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em">Tipo cuerpo</th>
+                    <th style="padding:.9rem 1rem;text-align:left;font-weight:500;color:#888;font-size:.75rem;text-transform:uppercase;letter-spacing:.05em">Perfil</th>
+                    <th style="padding:.9rem 1rem"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (usuarios != null)
+                {
+                    @foreach (var u in usuarios)
+                    {
+                        <tr style="border-bottom:1px solid #f5f1eb">
+                            <td style="padding:.85rem 1.25rem;color:#1a1a1a">@u.Email</td>
+                            <td style="padding:.85rem 1rem">
+                                <span class="pill @(u.Rol == "Admin" ? "pill-dark" : u.Rol == "Tienda" ? "pill-yellow" : "pill-cream")">
+                                    @u.Rol
+                                </span>
+                            </td>
+                            <td style="padding:.85rem 1rem;color:#555">@u.Nombre</td>
+                            <td style="padding:.85rem 1rem;color:#555">@u.TipoCuerpo</td>
+                            <td style="padding:.85rem 1rem">
+                                <span class="pill @(u.PerfilCompleto ? "pill-green" : "pill-red")">
+                                    @(u.PerfilCompleto ? "Completo" : "Pendiente")
+                                </span>
+                            </td>
+                            <td style="padding:.85rem 1rem">
+                                @if (u.Rol != "Admin")
+                                {
+                                    <form asp-action="EliminarUsuario" method="post"
+                                          onsubmit="return confirm('¿Eliminar a @u.Email?')">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="userId" value="@u.Id" />
+                                        <button class="btn-lyra-danger">✕</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,64 @@
+@model List<Lyra.Models.Prenda>
+@using Lyra.Enums
+@{ ViewData["Title"] = "Prendas — Admin"; }
+
+<div class="lyra-wrap">
+    <div class="page-header">
+        <div>
+            <h1 class="lyra-title" style="font-size:1.9rem">Catálogo global</h1>
+            <p style="color:#888;margin:.3rem 0 0;font-size:.9rem">@Model.Count prendas en total</p>
+        </div>
+        <a asp-action="CrearPrenda" class="btn-lyra">+ Nueva prenda</a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-3 py-2 px-3" style="font-size:.9rem">✓ @TempData["Success"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">👗</div>
+            <p class="empty-title">Sin prendas aún</p>
+        </div>
+    }
+    else
+    {
+        <div class="lyra-card" style="padding:0;overflow:hidden">
+            <table style="width:100%;border-collapse:collapse;font-size:.87rem">
+                <thead>
+                    <tr style="background:#faf8f5;border-bottom:1px solid #ede9e3">
+                        @foreach (var col in new[] { "Nombre", "Categoría", "Tienda", "Precio", "Talla", "Estado", "" })
+                        {
+                            <th style="padding:.85rem 1rem;text-align:left;font-weight:500;color:#888;font-size:.73rem;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap">@col</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model)
+                    {
+                        <tr style="border-bottom:1px solid #f5f1eb">
+                            <td style="padding:.8rem 1rem;color:#1a1a1a;font-weight:500">@p.Nombre</td>
+                            <td style="padding:.8rem 1rem;color:#888">@p.Categoria</td>
+                            <td style="padding:.8rem 1rem;color:#888">@(p.Tienda?.Nombre ?? "—")</td>
+                            <td style="padding:.8rem 1rem;color:#1a1a1a">S/ @p.Precio.ToString("0.00")</td>
+                            <td style="padding:.8rem 1rem"><span class="pill pill-cream">@p.Talla</span></td>
+                            <td style="padding:.8rem 1rem">
+                                <span class="pill @(p.Estado == EstadoPrenda.Disponible ? "pill-green" : p.Estado == EstadoPrenda.Agotado ? "pill-red" : "pill-yellow")">@p.Estado</span>
+                            </td>
+                            <td style="padding:.8rem 1rem">
+                                <form asp-action="EliminarPrenda" method="post"
+                                      onsubmit="return confirm('¿Eliminar @p.Nombre?')">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@p.Id" />
+                                    <button class="btn-lyra-danger">✕</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

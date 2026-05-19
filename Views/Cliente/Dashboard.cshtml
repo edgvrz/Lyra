@@ -1,0 +1,458 @@
+@model Lyra.Models.UsuarioPerfil
+@using Lyra.Services
+@using Lyra.Enums
+@{
+    ViewData["Title"] = "Mi Dashboard";
+    var tipoCuerpo = Model.TipoCuerpo ?? "Rectángulo";
+    var paleta     = ViewBag.Paleta as ColorimetriaService.PaletaRecomendada;
+
+    var skinTones = new Dictionary<TonoPielEnum, (string Fill, string Stroke)>
+    {
+        [TonoPielEnum.Claro]      = ("#f5e6d5", "#d4b896"),
+        [TonoPielEnum.MedioClaro] = ("#e8c49a", "#c4956a"),
+        [TonoPielEnum.Medio]      = ("#c8844a", "#a0602a"),
+        [TonoPielEnum.Oliva]      = ("#a0693a", "#7a4e1e"),
+        [TonoPielEnum.Moreno]     = ("#7a4828", "#5a3010"),
+        [TonoPielEnum.Oscuro]     = ("#3d1f10", "#200d02"),
+    };
+    var (skinFill, skinStroke) = skinTones.ContainsKey(Model.TonoPiel)
+        ? skinTones[Model.TonoPiel] : ("#e8c9a0", "#c4956a");
+
+    var palette = paleta?.Favorecen.Select(c => c.Hex).ToList()
+                  ?? new List<string> { "#c4a882", "#5a6d8a", "#7a6050" };
+    while (palette.Count < 6) palette.Add("#c4a882");
+
+    var outfits = new Dictionary<string, List<(string Nombre, string Tip, string SvgId)>>
+    {
+        ["Triángulo"] = new() {
+            ("Blusa con volumen",     "Mangas abullonadas equilibran hombros y cadera",  "blusa"),
+            ("Blazer estructurado",   "Crea hombros más anchos y define la figura",       "blazer"),
+            ("Vestido escote amplio", "Dirige la atención hacia arriba naturalmente",     "escote"),
+        },
+        ["Reloj de Arena"] = new() {
+            ("Vestido de envoltura",  "Abraza y define tu cintura perfectamente",         "wrap"),
+            ("Falda lápiz + top",     "Línea limpia que acentúa tus curvas",             "lapiz"),
+            ("Jeans de tiro alto",    "Resalta la cintura y alarga las piernas",         "jeans"),
+        },
+        ["Triángulo Invertido"] = new() {
+            ("Pantalón acampanado",   "Wide leg equilibra hombros y cadera",             "wideleg"),
+            ("Falda con vuelo",       "Añade volumen donde más lo necesitas",            "vuelo"),
+            ("Vestido evasé",         "Silueta A que equilibra la figura",               "evase"),
+        },
+        ["Rectángulo"] = new() {
+            ("Vestido con cinturón",  "El cinturón crea la cintura visualmente",         "cinturon"),
+            ("Blusa con pliegues",    "Añade dimensión y movimiento al torso",           "pliegues"),
+            ("Conjunto en capas",     "Las capas crean profundidad y curvas visuales",   "capas"),
+        },
+        ["Ovalado"] = new() {
+            ("Vestido línea A",       "La silueta A fluye desde el busto hacia abajo",  "aline"),
+            ("Conjunto fluido",       "Telas que caen naturalmente, sin ceñir",         "fluido"),
+            ("Chaqueta larga",        "Las capas largas estilizan verticalmente",       "chaqueta"),
+        },
+    };
+    var misOutfits = outfits.ContainsKey(tipoCuerpo) ? outfits[tipoCuerpo] : outfits["Rectángulo"];
+}
+
+<style>
+.car-slide        { display:none; }
+.car-slide.active { display:block; animation:fadeIn .3s ease; }
+@@keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+.car-card  { background:#faf8f5; border:1px solid #ede9e3; border-radius:14px;
+             padding:1.5rem; text-align:center; }
+.car-name  { font-family:'Playfair Display',serif; font-size:1.05rem; color:#1a1a1a;
+             margin:.75rem 0 .3rem; }
+.car-tip   { font-size:.8rem; color:#888; line-height:1.5; max-width:340px; margin:0 auto; }
+.car-nav   { display:flex; justify-content:space-between; align-items:center; margin-top:1rem; }
+.car-btn   { background:transparent; border:1px solid #ddd; border-radius:8px;
+             padding:.4rem 1.1rem; cursor:pointer; font-size:.85rem; color:#555;
+             font-family:'DM Sans',sans-serif; transition:border-color .2s; }
+.car-btn:hover    { border-color:#999; color:#1a1a1a; }
+.car-btn:disabled { opacity:.35; cursor:default; }
+.car-dots  { display:flex; gap:.5rem; }
+.car-dot   { width:8px; height:8px; border-radius:50%; background:#ddd;
+             transition:all .2s; cursor:pointer; }
+.car-dot.on { background:#1a1a1a; transform:scale(1.25); }
+.color-chip { width:38px; height:38px; border-radius:50%;
+              border:2px solid rgba(0,0,0,.08); flex-shrink:0; }
+.chip-x { opacity:.5; position:relative; }
+.chip-x::after { content:'✕'; position:absolute; inset:0; display:flex;
+  align-items:center; justify-content:center; font-size:.65rem; color:#fff;
+  text-shadow:0 0 3px rgba(0,0,0,.9); }
+</style>
+
+<div class="lyra-wrap">
+
+    <div class="page-header">
+        <div>
+            <h1 class="lyra-title" style="font-size:1.9rem">Hola, @Model.Nombre 👋</h1>
+            <p style="color:#888;margin:.3rem 0 0;font-size:.9rem">Tu perfil de estilo está listo</p>
+        </div>
+        <a asp-action="CompletarPerfil" class="btn-lyra-ghost">✏ Editar perfil</a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-3 py-2 px-3" style="font-size:.9rem">
+            ✓ @TempData["Success"]
+        </div>
+    }
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-num">@(ViewBag.TotalFavoritos ?? 0)</div>
+                <div class="stat-label">Guardadas</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div style="font-family:'Playfair Display',serif;font-size:1rem;color:#1a1a1a;
+                            padding-top:.5rem;line-height:1.2">@tipoCuerpo</div>
+                <div class="stat-label">Tipo de cuerpo</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-num">@Model.Estatura</div>
+                <div class="stat-label">Estatura (cm)</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <div class="stat-num">@Model.Peso</div>
+                <div class="stat-label">Peso (kg)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Carrusel ── -->
+    <div class="lyra-card" style="margin-bottom:1.25rem">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;
+                    margin-bottom:1.25rem;flex-wrap:wrap;gap:.5rem">
+            <div>
+                <p class="lyra-label mb-0">Outfits recomendados para ti</p>
+                <p style="font-family:'Playfair Display',serif;font-size:1.05rem;
+                           color:#1a1a1a;margin:.2rem 0 0">
+                    @tipoCuerpo — con tus colores favorables
+                </p>
+            </div>
+            <span class="pill pill-dark">@tipoCuerpo</span>
+        </div>
+
+        @for (int i = 0; i < misOutfits.Count; i++)
+        {
+            var (nombre, tip, svgId) = misOutfits[i];
+            var c1 = palette[i % palette.Count];
+            var c2 = palette[(i + 3) % palette.Count];
+            <div class="car-slide @(i == 0 ? "active" : "")">
+                <div class="car-card">
+                    <div style="max-width:200px;margin:0 auto">
+                        @Html.Raw(GetOutfitSvg(svgId, skinFill, skinStroke, c1, c2))
+                    </div>
+                    <div style="margin-top:.5rem">
+                        <span style="font-size:.72rem;color:#888">Color recomendado:</span>
+                        <span class="pill ms-1"
+                              style="background:@c1;color:@(IsDark(c1)?"#fff":"#1a1a1a");
+                                     font-size:.72rem;vertical-align:middle">
+                            @(paleta?.Favorecen.ElementAtOrDefault(i % (paleta?.Favorecen.Count ?? 1))?.Nombre ?? "Tu paleta")
+                        </span>
+                    </div>
+                    <p class="car-name">@nombre</p>
+                    <p class="car-tip">@tip</p>
+                </div>
+            </div>
+        }
+
+        <div class="car-nav">
+            <button class="car-btn" id="carPrev">← Anterior</button>
+            <div class="car-dots">
+                @for (int i = 0; i < misOutfits.Count; i++)
+                {
+                    <div class="car-dot @(i == 0 ? "on" : "")" data-target="@i"></div>
+                }
+            </div>
+            <button class="car-btn" id="carNext">Siguiente →</button>
+        </div>
+    </div>
+
+    <!-- ── Colorimetría ── -->
+    @if (paleta != null)
+    {
+        <div class="lyra-card" style="margin-bottom:1.25rem">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;
+                        margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
+                <div>
+                    <p class="lyra-label mb-0">Tu paleta de colores</p>
+                    <p style="font-family:'Playfair Display',serif;font-size:1.05rem;
+                               color:#1a1a1a;margin:.2rem 0 0">Subtono @paleta.Subtono</p>
+                </div>
+                <a asp-action="Recomendaciones" class="btn-lyra btn-lyra-sm">
+                    Ver prendas con estos colores →
+                </a>
+            </div>
+            <p style="font-size:.85rem;color:#666;margin-bottom:1.25rem;line-height:1.65;
+                      background:#faf8f5;padding:.85rem 1rem;border-radius:10px;
+                      border-left:3px solid #c9b99a">
+                @paleta.Tip
+            </p>
+            <p class="lyra-label mb-2">✓ Colores que te favorecen</p>
+            <div style="display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem">
+                @foreach (var c in paleta.Favorecen)
+                {
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:.35rem">
+                        <div class="color-chip" style="background:@c.Hex" title="@c.Nombre"></div>
+                        <span style="font-size:.65rem;color:#888;text-align:center;
+                                     max-width:52px;line-height:1.2">@c.Nombre</span>
+                    </div>
+                }
+            </div>
+            <p class="lyra-label mb-2">✕ Colores a evitar</p>
+            <div style="display:flex;flex-wrap:wrap;gap:1rem">
+                @foreach (var c in paleta.Evitar)
+                {
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:.35rem">
+                        <div class="color-chip chip-x" style="background:@c.Hex" title="@c.Nombre"></div>
+                        <span style="font-size:.65rem;color:#bbb;text-align:center;
+                                     max-width:52px;line-height:1.2">@c.Nombre</span>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- ── Perfil + Acciones ── -->
+    <div class="row g-3">
+        <div class="col-md-5">
+            <div class="lyra-card h-100">
+                <p class="lyra-label mb-3">Tu perfil corporal</p>
+                @if (Model.MedidasCorporales != null)
+                {
+                    var m = Model.MedidasCorporales;
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
+                        @foreach (var (nm, val) in new[] {
+                            ("Hombros", m.Hombros), ("Busto",  m.Busto),
+                            ("Cintura", m.Cintura), ("Cadera", m.Cadera)
+                        })
+                        {
+                            <div style="background:#faf8f5;border-radius:12px;padding:.9rem 1rem">
+                                <div style="font-size:.72rem;text-transform:uppercase;
+                                            letter-spacing:.05em;color:#aaa">@nm</div>
+                                <div style="font-family:'Playfair Display',serif;
+                                            font-size:1.3rem;color:#1a1a1a;margin-top:.15rem">
+                                    @val <span style="font-size:.7rem;color:#aaa">cm</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                <div style="margin-top:1rem">
+                    <span class="pill pill-dark">@tipoCuerpo</span>
+                    <span class="pill pill-cream ms-1">@Model.TonoPiel</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-7">
+            <div class="lyra-card">
+                <p class="lyra-label mb-3">Acciones rápidas</p>
+                <div style="display:flex;flex-direction:column;gap:.75rem">
+                    <a asp-action="Recomendaciones" class="btn-lyra"
+                       style="justify-content:center;padding:1rem">
+                        ✨ Ver mis recomendaciones
+                    </a>
+                    <a asp-action="Favoritos" class="btn-lyra-ghost"
+                       style="justify-content:center;padding:1rem">
+                        ♥ Mis prendas guardadas
+                        @if ((int)(ViewBag.TotalFavoritos ?? 0) > 0)
+                        { <span class="pill pill-dark ms-1">@ViewBag.TotalFavoritos</span> }
+                    </a>
+                    <a asp-action="CompletarPerfil" class="btn-lyra-ghost"
+                       style="justify-content:center;padding:1rem">
+                        📏 Actualizar medidas
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    bool IsDark(string hex) {
+        try {
+            hex = hex.TrimStart('#');
+            int r = Convert.ToInt32(hex[..2], 16);
+            int g = Convert.ToInt32(hex[2..4], 16);
+            int b = Convert.ToInt32(hex[4..6], 16);
+            return (r * 299 + g * 587 + b * 114) / 1000 < 128;
+        } catch { return true; }
+    }
+
+    string GetOutfitSvg(string id, string sk, string ss, string c1, string c2) => id switch {
+
+        "blusa" => $@"<svg viewBox='0 0 120 210' xmlns='http://www.w3.org/2000/svg' style='width:100%;max-height:190px'>
+  <ellipse cx='60' cy='17' rx='13' ry='15' fill='{sk}' stroke='{ss}' stroke-width='1.2'/>
+  <rect x='55' y='30' width='10' height='10' rx='3' fill='{sk}'/>
+  <path d='M27,40 C16,45 12,63 16,80 L44,80 L44,122 L76,122 L76,80 L104,80 C108,63 104,45 93,40 C82,56 72,56 60,56 C48,56 38,56 27,40Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <ellipse cx='16' cy='61' rx='13' ry='18' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <ellipse cx='104' cy='61' rx='13' ry='18' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M44,122 L36,205 L55,205 L60,165 L65,205 L84,205 L76,122Z' fill='{c2}' stroke='#0002' stroke-width='1'/>
+  <rect x='42' y='119' width='36' height='6' rx='3' fill='#0003'/></svg>",
+
+        "blazer" => $@"<svg viewBox='0 0 120 210' xmlns='http://www.w3.org/2000/svg' style='width:100%;max-height:190px'>
+  <ellipse cx='60' cy='17' rx='13' ry='15' fill='{sk}' stroke='{ss}' stroke-width='1.2'/>
+  <rect x='55' y='30' width='10' height='10' rx='3' fill='{sk}'/>
+  <path d='M20,40 L20,118 L57,118 L57,60 L63,60 L63,118 L100,118 L100,40 L80,40 L60,66 L40,40Z' fill='{c1}' stroke='#0002' stroke-width='1.2'/>
+  <path d='M20,40 L7,50 L7,100 L20,100Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M100,40 L113,50 L113,100 L100,100Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M44,118 L36,205 L55,205 L60,165 L65,205 L84,205 L76,118Z' fill='{c2}' stroke='#0002' stroke-width='1'/></svg>",
+
+        "escote" => $@"<svg viewBox='0 0 120 210' xmlns='http://www.w3.org/2000/svg' style='width:100%;max-height:190px'>
+  <ellipse cx='60' cy='17' rx='13' ry='15' fill='{sk}' stroke='{ss}' stroke-width='1.2'/>
+  <rect x='55' y='30' width='10' height='10' rx='3' fill='{sk}'/>
+  <path d='M22,40 C12,44 9,62 12,80 L30,80 L30,40Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M98,40 C108,44 111,62 108,80 L90,80 L90,40Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M30,40 L30,205 L90,205 L90,40 Q75,62 60,62 Q45,62 30,40Z' fill='{c1}' stroke='#0002' stroke-width='1.2'/>
+  <path d='M30,40 Q60,68 90,40' fill='none' stroke='#fff4' stroke-width='2'/></svg>",
+
+        "wrap" => $@"<svg viewBox='0 0 120 210' xmlns='http://www.w3.org/2000/svg' style='width:100%;max-height:190px'>
+  <ellipse cx='60' cy='17' rx='13' ry='15' fill='{sk}' stroke='{ss}' stroke-width='1.2'/>
+  <rect x='55' y='30' width='10' height='10' rx='3' fill='{sk}'/>
+  <path d='M30,40 L46,40 L60,62 L74,40 L90,40 L92,84 C95,128 98,165 98,205 L22,205 C22,165 25,128 28,84Z' fill='{c1}' stroke='#0002' stroke-width='1.2'/>
+  <path d='M46,40 L60,62 L74,40' fill='none' stroke='#fff4' stroke-width='2'/>
+  <path d='M12,58 L30,54 L28,84 L12,80Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M108,58 L90,54 L92,84 L108,80Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M33,87 L17,94' stroke='#fff5' stroke-width='1.5'/></svg>",
+
+        "lapiz" => $@"<svg viewBox='0 0 120 210' xmlns='http://www.w3.org/2000/svg' style='width:100%;max-height:190px'>
+  <ellipse cx='60' cy='17' rx='13' ry='15' fill='{sk}' stroke='{ss}' stroke-width='1.2'/>
+  <rect x='55' y='30' width='10' height='10' rx='3' fill='{sk}'/>
+  <path d='M38,40 L38,86 L82,86 L82,40Z' fill='{c1}' stroke='#0002' stroke-width='1.2'/>
+  <path d='M11,53 L38,49 L38,78 L11,74Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M109,53 L82,49 L82,78 L109,74Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <rect x='36' y='86' width='48' height='6' rx='3' fill='#0003'/>
+  <path d='M38,92 L35,205 L85,205 L82,92Z' fill='{c2}' stroke='#0002' stroke-width='1'/></svg>",
+
+        "jeans" => $@"<svg viewBox='0 0 120 210' xmlns='http://www.w3.org/2000/svg' style='width:100%;max-height:190px'>
+  <ellipse cx='60' cy='17' rx='13' ry='15' fill='{sk}' stroke='{ss}' stroke-width='1.2'/>
+  <rect x='55' y='30' width='10' height='10' rx='3' fill='{sk}'/>
+  <path d='M37,40 L37,86 L83,86 L83,40Z' fill='{c1}' stroke='#0002' stroke-width='1.2'/>
+  <path d='M11,52 L37,48 L37,78 L11,74Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M109,52 L83,48 L83,78 L109,74Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <rect x='34' y='86' width='52' height='6' rx='3' fill='{c2}'/>
+  <path d='M34,92 L28,205 L54,205 L60,155 L66,205 L92,205 L86,92Z' fill='{c2}' stroke='#0002' stroke-width='1'/>
+  <rect x='55' y='86' width='10' height='4' rx='1' fill='#0003'/></svg>",
+
+        "wideleg" => $@"<svg viewBox='0 0 120 210' xmlns='http://www.w3.org/2000/svg' style='width:100%;max-height:190px'>
+  <ellipse cx='60' cy='17' rx='13' ry='15' fill='{sk}' stroke='{ss}' stroke-width='1.2'/>
+  <rect x='55' y='30' width='10' height='10' rx='3' fill='{sk}'/>
+  <path d='M40,40 L40,80 L80,80 L80,40Z' fill='{c1}' stroke='#0002' stroke-width='1.2'/>
+  <path d='M14,50 L40,46 L40,73 L14,69Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M106,50 L80,46 L80,73 L106,69Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <rect x='36' y='80' width='48' height='6' rx='3' fill='#0003'/>
+  <path d='M36,86 L20,205 L54,205 L60,145 L66,205 L100,205 L84,86Z' fill='{c2}' stroke='#0002' stroke-width='1'/></svg>",
+
+        "vuelo" => $@"<svg viewBox='0 0 120 210' xmlns='http://www.w3.org/2000/svg' style='width:100%;max-height:190px'>
+  <ellipse cx='60' cy='17' rx='13' ry='15' fill='{sk}' stroke='{ss}' stroke-width='1.2'/>
+  <rect x='55' y='30' width='10' height='10' rx='3' fill='{sk}'/>
+  <path d='M42,40 L42,84 L78,84 L78,40Z' fill='{c1}' stroke='#0002' stroke-width='1.2'/>
+  <path d='M14,52 L42,48 L42,75 L14,71Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M106,52 L78,48 L78,75 L106,71Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M37,84 C17,96 7,132 11,205 L109,205 C113,132 103,96 83,84Z' fill='{c2}' stroke='#0002' stroke-width='1.2'/>
+  <line x1='37' y1='84' x2='83' y2='84' stroke='#0003' stroke-width='2'/></svg>",
+
+        "evase" => $@"<svg viewBox='0 0 120 210' xmlns='http://www.w3.org/2000/svg' style='width:100%;max-height:190px'>
+  <ellipse cx='60' cy='17' rx='13' ry='15' fill='{sk}' stroke='{ss}' stroke-width='1.2'/>
+  <rect x='55' y='30' width='10' height='10' rx='3' fill='{sk}'/>
+  <path d='M30,40 L90,40 L97,80 C103,130 107,165 109,205 L11,205 C13,165 17,130 23,80Z' fill='{c1}' stroke='#0002' stroke-width='1.2'/>
+  <path d='M11,52 L30,48 L30,73 L11,69Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M109,52 L90,48 L90,73 L109,69Z' fill='{c1}' stroke='#0002' stroke-width='1'/></svg>",
+
+        "cinturon" => $@"<svg viewBox='0 0 120 210' xmlns='http://www.w3.org/2000/svg' style='width:100%;max-height:190px'>
+  <ellipse cx='60' cy='17' rx='13' ry='15' fill='{sk}' stroke='{ss}' stroke-width='1.2'/>
+  <rect x='55' y='30' width='10' height='10' rx='3' fill='{sk}'/>
+  <path d='M30,40 L30,86 L90,86 L90,40Z' fill='{c1}' stroke='#0002' stroke-width='1.2'/>
+  <path d='M11,52 L30,48 L30,74 L11,70Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M109,52 L90,48 L90,74 L109,70Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <rect x='28' y='86' width='64' height='9' rx='4' fill='#1a1a1a'/>
+  <rect x='56' y='87' width='8' height='7' rx='2' fill='{c1}'/>
+  <path d='M30,95 L24,205 L96,205 L90,95Z' fill='{c1}' stroke='#0002' stroke-width='1'/></svg>",
+
+        "pliegues" => $@"<svg viewBox='0 0 120 210' xmlns='http://www.w3.org/2000/svg' style='width:100%;max-height:190px'>
+  <ellipse cx='60' cy='17' rx='13' ry='15' fill='{sk}' stroke='{ss}' stroke-width='1.2'/>
+  <rect x='55' y='30' width='10' height='10' rx='3' fill='{sk}'/>
+  <path d='M32,40 L32,84 L88,84 L88,40 Q72,58 60,58 Q48,58 32,40Z' fill='{c1}' stroke='#0002' stroke-width='1.2'/>
+  <path d='M11,50 L32,46 L32,74 L11,70Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M109,50 L88,46 L88,74 L109,70Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <line x1='44' y1='48' x2='44' y2='82' stroke='#fff4' stroke-width='.9' stroke-dasharray='3'/>
+  <line x1='60' y1='48' x2='60' y2='82' stroke='#fff4' stroke-width='.9' stroke-dasharray='3'/>
+  <line x1='76' y1='48' x2='76' y2='82' stroke='#fff4' stroke-width='.9' stroke-dasharray='3'/>
+  <path d='M32,84 L24,205 L96,205 L88,84Z' fill='{c2}' stroke='#0002' stroke-width='1'/></svg>",
+
+        "capas" => $@"<svg viewBox='0 0 120 210' xmlns='http://www.w3.org/2000/svg' style='width:100%;max-height:190px'>
+  <ellipse cx='60' cy='17' rx='13' ry='15' fill='{sk}' stroke='{ss}' stroke-width='1.2'/>
+  <rect x='55' y='30' width='10' height='10' rx='3' fill='{sk}'/>
+  <path d='M38,40 L38,86 L82,86 L82,40Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M20,40 L20,158 L44,158 L44,40Z' fill='{c2}' stroke='#0002' stroke-width='1'/>
+  <path d='M100,40 L100,158 L76,158 L76,40Z' fill='{c2}' stroke='#0002' stroke-width='1'/>
+  <path d='M7,50 L20,46 L20,74 L7,70Z' fill='{c2}' stroke='#0002' stroke-width='1'/>
+  <path d='M113,50 L100,46 L100,74 L113,70Z' fill='{c2}' stroke='#0002' stroke-width='1'/>
+  <path d='M38,86 L34,205 L86,205 L82,86Z' fill='#2a2a2a' stroke='#0002' stroke-width='1'/></svg>",
+
+        "aline" => $@"<svg viewBox='0 0 120 210' xmlns='http://www.w3.org/2000/svg' style='width:100%;max-height:190px'>
+  <ellipse cx='60' cy='17' rx='13' ry='15' fill='{sk}' stroke='{ss}' stroke-width='1.2'/>
+  <rect x='55' y='30' width='10' height='10' rx='3' fill='{sk}'/>
+  <path d='M35,40 L85,40 L85,80 L35,80Z' fill='{c1}' stroke='#0002' stroke-width='1.2'/>
+  <path d='M11,52 L35,48 L35,73 L11,69Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M109,52 L85,48 L85,73 L109,69Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M35,80 L13,205 L107,205 L85,80Z' fill='{c2}' stroke='#0002' stroke-width='1.2'/></svg>",
+
+        "fluido" => $@"<svg viewBox='0 0 120 210' xmlns='http://www.w3.org/2000/svg' style='width:100%;max-height:190px'>
+  <ellipse cx='60' cy='17' rx='13' ry='15' fill='{sk}' stroke='{ss}' stroke-width='1.2'/>
+  <rect x='55' y='30' width='10' height='10' rx='3' fill='{sk}'/>
+  <path d='M30,40 C26,50 24,64 26,80 L94,80 C96,64 94,50 90,40Z' fill='{c1}' stroke='#0002' stroke-width='1.2'/>
+  <path d='M9,50 L30,46 L26,76 L9,72Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M111,50 L90,46 L94,76 L111,72Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <rect x='34' y='80' width='52' height='6' rx='3' fill='#0003'/>
+  <path d='M36,86 L32,205 L88,205 L84,86Z' fill='{c2}' stroke='#0002' stroke-width='1'/></svg>",
+
+        "chaqueta" => $@"<svg viewBox='0 0 120 210' xmlns='http://www.w3.org/2000/svg' style='width:100%;max-height:190px'>
+  <ellipse cx='60' cy='17' rx='13' ry='15' fill='{sk}' stroke='{ss}' stroke-width='1.2'/>
+  <rect x='55' y='30' width='10' height='10' rx='3' fill='{sk}'/>
+  <path d='M40,40 L40,86 L80,86 L80,40Z' fill='{c1}' stroke='#0002' stroke-width='1'/>
+  <path d='M20,40 L20,165 L44,165 L44,40Z' fill='{c2}' stroke='#0002' stroke-width='1'/>
+  <path d='M100,40 L100,165 L76,165 L76,40Z' fill='{c2}' stroke='#0002' stroke-width='1'/>
+  <path d='M7,50 L20,46 L20,74 L7,70Z' fill='{c2}' stroke='#0002' stroke-width='1'/>
+  <path d='M113,50 L100,46 L100,74 L113,70Z' fill='{c2}' stroke='#0002' stroke-width='1'/>
+  <path d='M40,86 L36,205 L84,205 L80,86Z' fill='#2a2a2a' stroke='#0002' stroke-width='1'/></svg>",
+
+        _ => "<div style='height:190px;display:flex;align-items:center;justify-content:center;font-size:3rem'>👗</div>"
+    };
+}
+
+@section Scripts {
+<script>
+(function () {
+    var current = 0;
+    var slides  = Array.from(document.querySelectorAll('.car-slide'));
+    var dots    = Array.from(document.querySelectorAll('.car-dot'));
+    var total   = slides.length;
+    var btnPrev = document.getElementById('carPrev');
+    var btnNext = document.getElementById('carNext');
+
+    function show(idx) {
+        idx = Math.max(0, Math.min(total - 1, idx));
+        slides.forEach(function (s, i) { s.classList.toggle('active', i === idx); });
+        dots.forEach(function (d, i)   { d.classList.toggle('on',     i === idx); });
+        btnPrev.disabled = (idx === 0);
+        btnNext.disabled = (idx === total - 1);
+        current = idx;
+    }
+
+    btnPrev.addEventListener('click', function () { show(current - 1); });
+    btnNext.addEventListener('click', function () { show(current + 1); });
+    dots.forEach(function (d, i) { d.addEventListener('click', function () { show(i); }); });
+
+    show(0);
+}());
+</script>
+}

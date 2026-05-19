@@ -1,0 +1,63 @@
+@model List<Lyra.Models.Favorito>
+@{ ViewData["Title"] = "Mis Favoritos"; }
+
+<div class="lyra-wrap">
+    <div class="page-header">
+        <div>
+            <h1 class="lyra-title" style="font-size:1.9rem">Mis guardadas</h1>
+            <p style="color:#888;margin:.3rem 0 0;font-size:.9rem">@Model.Count prenda@(Model.Count != 1 ? "s" : "") guardada@(Model.Count != 1 ? "s" : "")</p>
+        </div>
+        <a asp-action="Recomendaciones" class="btn-lyra">✨ Ver más</a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-3 py-2 px-3" style="font-size:.9rem">✓ @TempData["Success"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">🤍</div>
+            <p class="empty-title">Aún no guardaste prendas</p>
+            <p class="empty-sub">Cuando guardes una prenda aparecerá aquí.</p>
+            <a asp-action="Recomendaciones" class="btn-lyra mt-3">Explorar recomendaciones</a>
+        </div>
+    }
+    else
+    {
+        <div class="prendas-grid">
+            @foreach (var fav in Model)
+            {
+                var p = fav.Prenda;
+                <div class="pcard">
+                    @if (!string.IsNullOrEmpty(p.ImagenUrl))
+                    {
+                        <img src="@p.ImagenUrl" class="pcard-img" alt="@p.Nombre"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                        <div class="pcard-img-ph" style="display:none">👗</div>
+                    }
+                    else { <div class="pcard-img-ph">👗</div> }
+
+                    <div class="pcard-body">
+                        <p class="pcard-cat">@p.Categoria</p>
+                        <p class="pcard-name">@p.Nombre</p>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem">
+                            <span style="font-weight:500;color:#1a1a1a">S/ @p.Precio.ToString("0.00")</span>
+                            <span class="pill pill-cream">@p.Talla</span>
+                        </div>
+                        @if (p.Tienda != null)
+                        {
+                            <p style="font-size:.75rem;color:#aaa;margin-bottom:.75rem">🏪 @p.Tienda.Nombre</p>
+                        }
+                        <form asp-action="QuitarFavorito" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="favoritoId" value="@fav.Id" />
+                            <button class="btn-lyra-danger w-100">✕ Quitar</button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

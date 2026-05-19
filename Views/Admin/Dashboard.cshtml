@@ -1,0 +1,47 @@
+@{ ViewData["Title"] = "Admin Dashboard"; }
+
+<div class="lyra-wrap">
+    <div class="page-header">
+        <div>
+            <h1 class="lyra-title" style="font-size:1.9rem">Panel de administración</h1>
+            <p style="color:#888;margin:.3rem 0 0;font-size:.9rem">Gestión global de LYRA</p>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        @foreach (var (label, valor, icon) in new[] {
+            ("Clientes",  (int)ViewBag.TotalClientes,  "👤"),
+            ("Tiendas",   (int)ViewBag.TotalTiendas,   "🏪"),
+            ("Prendas",   (int)ViewBag.TotalPrendas,   "👗"),
+            ("Favoritos", (int)ViewBag.TotalFavoritos, "♥")
+        })
+        {
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <div style="font-size:1.5rem;margin-bottom:.5rem">@icon</div>
+                    <div class="stat-num">@valor</div>
+                    <div class="stat-label">@label</div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="row g-3">
+        @foreach (var (titulo, accion, desc) in new[] {
+            ("Gestionar usuarios",  "Usuarios", "Ver roles, perfiles y tipo de cuerpo"),
+            ("Gestionar tiendas",   "Tiendas",  "Activar, pausar y revisar tiendas"),
+            ("Gestionar prendas",   "Prendas",  "Ver y eliminar prendas del catálogo"),
+            ("Crear prenda",        "CrearPrenda", "Publicar prenda sin tienda asociada")
+        })
+        {
+            <div class="col-md-6">
+                <a asp-action="@accion" style="text-decoration:none">
+                    <div class="lyra-card" style="transition:transform .2s;cursor:pointer">
+                        <p style="font-family:'Playfair Display',serif;font-size:1.1rem;color:#1a1a1a;margin:0 0 .3rem">@titulo</p>
+                        <p style="font-size:.83rem;color:#aaa;margin:0">@desc</p>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,294 @@
+@model Lyra.Models.UsuarioPerfil
+@using Lyra.Enums
+@{
+    ViewData["Title"] = "Tu Perfil Corporal";
+    bool esEdicion = Model?.PerfilCompleto == true;
+
+    var tonosPiel = new Dictionary<TonoPielEnum, string>
+    {
+        { TonoPielEnum.Claro,      "Claro — Piel muy blanca o rosada" },
+        { TonoPielEnum.MedioClaro, "Medio Claro — Beige suave" },
+        { TonoPielEnum.Medio,      "Medio — Tono neutro" },
+        { TonoPielEnum.Oliva,      "Oliva — Amarillo-verdoso cálido" },
+        { TonoPielEnum.Moreno,     "Moreno — Café medio a oscuro" },
+        { TonoPielEnum.Oscuro,     "Oscuro — Ébano o muy oscuro" }
+    };
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+<style>
+    .lyra-wrap     { font-family: 'DM Sans', sans-serif; max-width: 720px; margin: 0 auto; padding: 2rem 1rem; }
+    .lyra-title    { font-family: 'Playfair Display', serif; font-size: 2rem; color: #1a1a1a; }
+    .lyra-sub      { color: #6b6b6b; font-size: .95rem; margin-top: .25rem; }
+    .step-bar      { display: flex; gap: 0; margin: 2rem 0; border-radius: 30px; overflow: hidden; height: 5px; background: #e9e6e0; }
+    .step-fill     { background: #1a1a1a; transition: width .4s ease; }
+    .step-labels   { display: flex; justify-content: space-between; font-size: .8rem; color: #9e9e9e; margin-top: .4rem; }
+    .step-labels span.active { color: #1a1a1a; font-weight: 500; }
+    .lyra-card     { background: #fff; border: 1px solid #ede9e3; border-radius: 16px; padding: 2rem; margin-bottom: 1.5rem; }
+    .lyra-label    { font-size: .82rem; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: #888; margin-bottom: .4rem; display: block; }
+    .lyra-input    { width: 100%; border: 1px solid #ddd; border-radius: 10px; padding: .7rem 1rem; font-family: 'DM Sans', sans-serif; font-size: .97rem; color: #1a1a1a; transition: border-color .2s; outline: none; }
+    .lyra-input:focus { border-color: #1a1a1a; }
+    .medida-row    { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .medida-box    { position: relative; }
+    .medida-unit   { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: .82rem; color: #aaa; pointer-events: none; }
+    .medida-hint   { font-size: .76rem; color: #aaa; margin-top: .3rem; }
+    .guide-box     { background: #faf8f5; border: 1px solid #ede9e3; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
+    .guide-box h6  { font-family: 'DM Sans', sans-serif; font-weight: 500; font-size: .88rem; color: #555; margin: 0 0 .5rem; }
+    .guide-box ul  { margin: 0; padding-left: 1.2rem; font-size: .83rem; color: #888; line-height: 1.7; }
+    .btn-lyra-next { background: #1a1a1a; color: #fff; border: none; border-radius: 12px; padding: .85rem 2rem; font-family: 'DM Sans', sans-serif; font-size: .97rem; font-weight: 500; cursor: pointer; width: 100%; transition: background .2s; }
+    .btn-lyra-next:hover { background: #333; }
+    .btn-lyra-back { background: transparent; color: #555; border: 1px solid #ddd; border-radius: 12px; padding: .85rem 2rem; font-family: 'DM Sans', sans-serif; font-size: .97rem; cursor: pointer; width: 100%; transition: border-color .2s; }
+    .btn-lyra-back:hover { border-color: #999; }
+    .result-pill   { display: inline-block; background: #f0ebe3; border-radius: 30px; padding: .3rem .9rem; font-size: .82rem; color: #5a4e3e; margin-top: .5rem; }
+    .tono-grid     { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; }
+    .tono-opt      { display: none; }
+    .tono-label    { display: flex; flex-direction: column; align-items: center; gap: .4rem; cursor: pointer; padding: .7rem .5rem; border: 2px solid transparent; border-radius: 12px; transition: border-color .2s; font-size: .78rem; color: #666; text-align: center; }
+    .tono-circle   { width: 38px; height: 38px; border-radius: 50%; border: 2px solid rgba(0,0,0,.1); }
+    .tono-opt:checked + .tono-label { border-color: #1a1a1a; color: #1a1a1a; }
+    @@media (max-width: 540px) { .medida-row { grid-template-columns: 1fr; } .tono-grid { grid-template-columns: repeat(2,1fr); } }
+</style>
+
+<div class="lyra-wrap">
+    <div>
+        <h1 class="lyra-title">@(esEdicion ? "Actualiza tu perfil" : "Crea tu perfil")</h1>
+        <p class="lyra-sub">@(esEdicion ? "Modifica tus datos y recalculamos tu tipo de cuerpo." : "Ingresa tus datos y descubriremos tu tipo de cuerpo ideal.")</p>
+    </div>
+
+    <!-- Barra de progreso -->
+    <div class="step-bar"><div class="step-fill" id="stepFill" style="width:50%"></div></div>
+    <div class="step-labels">
+        <span id="lbl1" class="active">Datos personales</span>
+        <span id="lbl2">Medidas corporales</span>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mt-3">✓ @TempData["Success"]</div>
+    }
+
+    <form asp-action="CompletarPerfil" method="post" id="perfilForm">
+        @Html.AntiForgeryToken()
+
+        <!-- ═══ PASO 1: Datos personales ═══ -->
+        <div id="paso1">
+            <div class="lyra-card">
+                <div class="mb-3">
+                    <label class="lyra-label">Nombre completo</label>
+                    <input class="lyra-input" type="text" name="nombre"
+                           value="@Model?.Nombre" placeholder="Ej. Valentina Cruz" required />
+                </div>
+
+                <div class="medida-row">
+                    <div>
+                        <label class="lyra-label">Edad</label>
+                        <div class="medida-box">
+                            <input class="lyra-input" type="number" name="edad"
+                                   value="@(Model?.Edad > 0 ? Model.Edad : "")"
+                                   placeholder="25" min="14" max="100" required />
+                            <span class="medida-unit">años</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="lyra-label">Peso</label>
+                        <div class="medida-box">
+                            <input class="lyra-input" type="number" step="0.1" name="peso"
+                                   value="@(Model?.Peso > 0 ? Model.Peso : "")"
+                                   placeholder="58.5" min="30" max="300" required />
+                            <span class="medida-unit">kg</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <label class="lyra-label">Estatura</label>
+                    <div class="medida-box">
+                        <input class="lyra-input" type="number" step="0.1" name="estatura"
+                               value="@(Model?.Estatura > 0 ? Model.Estatura : "")"
+                               placeholder="165.0" min="100" max="220" required />
+                        <span class="medida-unit">cm</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selector tono de piel -->
+            <div class="lyra-card">
+                <label class="lyra-label" style="margin-bottom:.8rem">Tono de piel</label>
+                <div class="tono-grid">
+                    @{
+                        var colores = new Dictionary<TonoPielEnum, string>
+                        {
+                            { TonoPielEnum.Claro,      "#F9E8D5" },
+                            { TonoPielEnum.MedioClaro, "#E8C9A0" },
+                            { TonoPielEnum.Medio,      "#C8956C" },
+                            { TonoPielEnum.Oliva,      "#A67C52" },
+                            { TonoPielEnum.Moreno,     "#7B4F2E" },
+                            { TonoPielEnum.Oscuro,     "#3D1F10" }
+                        };
+                        var nombresCortos = new Dictionary<TonoPielEnum, string>
+                        {
+                            { TonoPielEnum.Claro,      "Claro" },
+                            { TonoPielEnum.MedioClaro, "Medio Claro" },
+                            { TonoPielEnum.Medio,      "Medio" },
+                            { TonoPielEnum.Oliva,      "Oliva" },
+                            { TonoPielEnum.Moreno,     "Moreno" },
+                            { TonoPielEnum.Oscuro,     "Oscuro" }
+                        };
+                    }
+                    @foreach (var tono in Enum.GetValues<TonoPielEnum>())
+                    {
+                        var seleccionado = Model?.TonoPiel == tono;
+                        <div>
+                            <input class="tono-opt" type="radio" name="tonoPiel"
+                                   id="tono_@tono" value="@tono"
+                                   @(seleccionado ? "checked" : "") required />
+                            <label class="tono-label" for="tono_@tono">
+                                <span class="tono-circle" style="background:@colores[tono]"></span>
+                                @nombresCortos[tono]
+                            </label>
+                        </div>
+                    }
+                </div>
+                <p id="tono-error"
+   style="display:none;color:#c0392b;font-size:.8rem;margin:.5rem 0 0">
+   ← Selecciona tu tono de piel para continuar
+</p>
+            </div>
+
+            <button type="button" class="btn-lyra-next" onclick="irPaso2()">
+                Continuar → Medidas
+            </button>
+        </div>
+
+        <!-- ═══ PASO 2: Medidas corporales ═══ -->
+        <div id="paso2" style="display:none">
+            <div class="guide-box">
+                <h6>📏 ¿Cómo medir correctamente?</h6>
+                <ul>
+                    <li><strong>Hombros</strong> — Circunferencia a la altura de los omóplatos</li>
+                    <li><strong>Busto</strong> — Circunferencia en la parte más voluminosa del pecho</li>
+                    <li><strong>Cintura</strong> — Parte más estrecha del abdomen, sobre el ombligo</li>
+                    <li><strong>Cadera</strong> — Parte más ancha a la altura de los glúteos</li>
+                </ul>
+                <p style="font-size:.76rem;color:#aaa;margin:.5rem 0 0">
+                    Mide en ropa interior, sin apretar la cinta. Todas en centímetros.
+                </p>
+            </div>
+
+            <div class="lyra-card">
+                <div class="medida-row">
+                    <div>
+                        <label class="lyra-label">Hombros</label>
+                        <div class="medida-box">
+                            <input class="lyra-input" type="number" step="0.1" name="hombros"
+                                   value="@(Model?.MedidasCorporales?.Hombros > 0 ? Model.MedidasCorporales.Hombros : "")"
+                                   placeholder="88.0" min="50" max="200" required />
+                            <span class="medida-unit">cm</span>
+                        </div>
+                        <p class="medida-hint">Circunf. hombros</p>
+                    </div>
+                    <div>
+                        <label class="lyra-label">Busto</label>
+                        <div class="medida-box">
+                            <input class="lyra-input" type="number" step="0.1" name="busto"
+                                   value="@(Model?.MedidasCorporales?.Busto > 0 ? Model.MedidasCorporales.Busto : "")"
+                                   placeholder="90.0" min="50" max="200" required />
+                            <span class="medida-unit">cm</span>
+                        </div>
+                        <p class="medida-hint">Punto más voluminoso</p>
+                    </div>
+                    <div>
+                        <label class="lyra-label">Cintura</label>
+                        <div class="medida-box">
+                            <input class="lyra-input" type="number" step="0.1" name="cintura"
+                                   value="@(Model?.MedidasCorporales?.Cintura > 0 ? Model.MedidasCorporales.Cintura : "")"
+                                   placeholder="68.0" min="40" max="180" required />
+                            <span class="medida-unit">cm</span>
+                        </div>
+                        <p class="medida-hint">Parte más estrecha</p>
+                    </div>
+                    <div>
+                        <label class="lyra-label">Cadera</label>
+                        <div class="medida-box">
+                            <input class="lyra-input" type="number" step="0.1" name="cadera"
+                                   value="@(Model?.MedidasCorporales?.Cadera > 0 ? Model.MedidasCorporales.Cadera : "")"
+                                   placeholder="96.0" min="50" max="200" required />
+                            <span class="medida-unit">cm</span>
+                        </div>
+                        <p class="medida-hint">Parte más ancha</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-3">
+                <button type="button" class="btn-lyra-back" onclick="irPaso1()">← Volver</button>
+                <button type="submit" class="btn-lyra-next">
+                    @(esEdicion ? "Actualizar perfil" : "Analizar mi cuerpo ✨")
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    function irPaso2() {
+        // 1. Validar inputs normales (texto, número) — excluir radios ocultos
+        const inputs = document.querySelectorAll(
+            '#paso1 input[required]:not([type="radio"])');
+        for (const c of inputs) {
+            if (!c.checkValidity()) {
+                c.reportValidity();
+                return;
+            }
+        }
+
+        // 2. Validar tono de piel por separado (radio buttons ocultos)
+        const tonoOk = document.querySelector(
+            '#paso1 input[name="tonoPiel"]:checked');
+        if (!tonoOk) {
+            // Resaltar visualmente el selector de tono
+            const grid = document.querySelector('.tono-grid');
+            grid.style.outline = '2px solid #c0392b';
+            grid.style.borderRadius = '12px';
+            grid.style.padding = '.5rem';
+
+            const msg = document.getElementById('tono-error');
+            if (msg) msg.style.display = 'block';
+            return;
+        }
+
+        // 3. Todo ok → mostrar paso 2
+        document.getElementById('paso1').style.display = 'none';
+        document.getElementById('paso2').style.display = 'block';
+        document.getElementById('stepFill').style.width = '100%';
+        document.getElementById('lbl1').classList.remove('active');
+        document.getElementById('lbl2').classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function irPaso1() {
+        document.getElementById('paso2').style.display = 'none';
+        document.getElementById('paso1').style.display = 'block';
+        document.getElementById('stepFill').style.width = '50%';
+        document.getElementById('lbl1').classList.add('active');
+        document.getElementById('lbl2').classList.remove('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Quitar error de tono al seleccionar uno
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('input[name="tonoPiel"]')
+            .forEach(r => r.addEventListener('change', () => {
+                const grid = document.querySelector('.tono-grid');
+                grid.style.outline = 'none';
+                grid.style.padding = '0';
+                const msg = document.getElementById('tono-error');
+                if (msg) msg.style.display = 'none';
+            }));
+
+        @if (esEdicion)
+        {
+            <text>irPaso2();</text>
+        }
+    });
+</script>

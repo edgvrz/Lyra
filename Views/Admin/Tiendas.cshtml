@@ -1,0 +1,150 @@
+@model List<Lyra.Models.Tienda>
+@using Lyra.Enums
+@{ ViewData["Title"] = "Tiendas"; }
+
+<div class="lyra-wrap">
+    <div class="page-header">
+        <div>
+            <h1 class="lyra-title" style="font-size:1.9rem">Tiendas</h1>
+            <p style="color:#888;margin:.3rem 0 0;font-size:.9rem">
+                @Model.Count(t => t.EstadoAprobacion == EstadoAprobacion.Aprobada) aprobadas ·
+                <span style="color:#c9a227">@Model.Count(t => t.EstadoAprobacion == EstadoAprobacion.Pendiente) pendientes</span>
+            </p>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-3 py-2 px-3" style="font-size:.9rem">
+            ✓ @TempData["Success"]
+        </div>
+    }
+
+    @{
+        var pendientes = Model.Any() ? Model.Where(t => t.EstadoAprobacion == EstadoAprobacion.Pendiente).ToList() : new List<Tienda>();
+        var aprobadas  = Model.Any() ? Model.Where(t => t.EstadoAprobacion == EstadoAprobacion.Aprobada).ToList() : new List<Tienda>();
+        var rechazadas = Model.Any() ? Model.Where(t => t.EstadoAprobacion == EstadoAprobacion.Rechazada).ToList() : new List<Tienda>();
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">🏪</div>
+            <p class="empty-title">Sin tiendas registradas</p>
+        </div>
+    }
+    else
+    {
+        <!-- Pendientes primero -->
+
+        @if (pendientes.Any())
+        {
+            <p class="lyra-label mb-2" style="color:#c9a227">⏳ Pendientes de revisión (@pendientes.Count)</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;margin-bottom:2rem">
+                @foreach (var t in pendientes)
+                {
+                    <div class="lyra-card" style="border-color:#f0e2b0">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.8rem">
+                            <div>
+                                <p style="font-family:'Playfair Display',serif;font-size:1.1rem;color:#1a1a1a;margin:0">@t.Nombre</p>
+                                <p style="font-size:.78rem;color:#aaa;margin:.15rem 0 0">@(t.Ciudad ?? "Sin ciudad") · @t.FechaRegistro.ToString("dd/MM/yyyy")</p>
+                            </div>
+                            <span class="pill pill-yellow">Pendiente</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(t.Descripcion))
+                        {
+                            <p style="font-size:.83rem;color:#888;margin-bottom:.8rem">@t.Descripcion</p>
+                        }
+                        <div style="display:flex;gap:.5rem;margin-top:.5rem">
+                            <!-- Aprobar -->
+                            <form asp-action="AprobarTienda" method="post" style="flex:1">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@t.Id" />
+                                <button class="btn-lyra btn-lyra-sm w-100" style="background:#2d7a4f">
+                                    ✓ Aprobar
+                                </button>
+                            </form>
+                            <!-- Rechazar con motivo -->
+                            <form asp-action="RechazarTienda" method="post" style="flex:1"
+                                  onsubmit="return pedirMotivo(this)">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@t.Id" />
+                                <input type="hidden" name="motivo" id="motivo_@t.Id" />
+                                <button type="submit" class="btn-lyra-danger w-100" style="padding:.45rem .9rem">
+                                    ✕ Rechazar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (aprobadas.Any())
+        {
+            <p class="lyra-label mb-2" style="color:#2d7a4f">✓ Aprobadas (@aprobadas.Count)</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem;margin-bottom:2rem">
+                @foreach (var t in aprobadas)
+                {
+                    <div class="lyra-card">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.8rem">
+                            <div>
+                                <p style="font-family:'Playfair Display',serif;font-size:1.05rem;color:#1a1a1a;margin:0">@t.Nombre</p>
+                                <p style="font-size:.75rem;color:#aaa;margin:.1rem 0 0">@(t.Ciudad ?? "—") · 👗 @t.Prendas.Count prendas</p>
+                            </div>
+                            <span class="pill @(t.Activa ? "pill-green" : "pill-red")">
+                                @(t.Activa ? "Activa" : "Pausada")
+                            </span>
+                        </div>
+                        <form asp-action="ToggleTienda" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@t.Id" />
+                            <button class="@(t.Activa ? "btn-lyra-danger" : "btn-lyra") w-100 btn-lyra-sm">
+                                @(t.Activa ? "Pausar" : "Activar")
+                            </button>
+                        </form>
+                    </div>
+                }
+            </div>
+        }
+
+        @if (rechazadas.Any())
+        {
+            <p class="lyra-label mb-2" style="color:#c0392b">✕ Rechazadas (@rechazadas.Count)</p>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.25rem">
+                @foreach (var t in rechazadas)
+                {
+                    <div class="lyra-card" style="border-color:#f1c0bb;opacity:.8">
+                        <div style="display:flex;justify-content:space-between;margin-bottom:.5rem">
+                            <p style="font-family:'Playfair Display',serif;font-size:1rem;color:#1a1a1a;margin:0">@t.Nombre</p>
+                            <span class="pill pill-red">Rechazada</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(t.MotivoRechazo))
+                        {
+                            <p style="font-size:.8rem;color:#c0392b;margin:.3rem 0 .8rem">@t.MotivoRechazo</p>
+                        }
+                        <!-- Re-aprobar si cambia de opinión -->
+                        <form asp-action="AprobarTienda" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@t.Id" />
+                            <button class="btn-lyra btn-lyra-sm w-100" style="background:#555">
+                                ↩ Re-aprobar
+                            </button>
+                        </form>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+<script>
+function pedirMotivo(form) {
+    const tiendaId = form.querySelector('input[name="id"]').value;
+    const motivoInput = document.getElementById('motivo_' + tiendaId);
+    const motivo = prompt('Motivo del rechazo (opcional):');
+    if (motivo === null) return false; // canceló
+    motivoInput.value = motivo;
+    return true;
+}
+</script>

@@ -1,0 +1,58 @@
+@model Lyra.Models.Tienda
+@{ ViewData["Title"] = "Mi Tienda"; }
+
+<div class="lyra-wrap">
+    <div class="page-header">
+        <div>
+            <h1 class="lyra-title" style="font-size:1.9rem">@Model.Nombre</h1>
+            <p style="color:#888;margin:.3rem 0 0;font-size:.9rem">
+                @(string.IsNullOrEmpty(Model.Ciudad) ? "Sin ciudad" : Model.Ciudad)
+                <span class="pill @(Model.Activa ? "pill-green" : "pill-red") ms-2">
+                    @(Model.Activa ? "Activa" : "Pausada")
+                </span>
+            </p>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <a asp-action="ConfigurarTienda" class="btn-lyra-ghost btn-lyra-sm">⚙ Configurar</a>
+            <a asp-action="CrearPrenda" class="btn-lyra btn-lyra-sm">+ Nueva prenda</a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-3 py-2 px-3" style="font-size:.9rem">✓ @TempData["Success"]</div>
+    }
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4">
+            <div class="stat-card">
+                <div class="stat-num">@ViewBag.TotalPrendas</div>
+                <div class="stat-label">Total prendas</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="stat-card">
+                <div class="stat-num">@ViewBag.Disponibles</div>
+                <div class="stat-label">Disponibles</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="stat-card">
+                <div class="stat-num">@ViewBag.TotalFavoritos</div>
+                <div class="stat-label">Guardadas por clientes</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="lyra-card">
+        <p class="lyra-label mb-3">Acciones</p>
+        <div style="display:flex;flex-direction:column;gap:.7rem">
+            <a asp-action="MisPrendas" class="btn-lyra-ghost" style="justify-content:center;padding:.9rem">
+                👗 Gestionar prendas
+            </a>
+            <a asp-action="CrearPrenda" class="btn-lyra" style="justify-content:center;padding:.9rem">
+                + Publicar nueva prenda
+            </a>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,119 @@
+@using Lyra.Enums
+@using Lyra.Services
+@{ ViewData["Title"] = "Nueva Prenda"; }
+
+@{
+    var tiposCuerpo = new[]
+    {
+        TipoCuerpoConst.RelojDeArena,  TipoCuerpoConst.Triangulo,
+        TipoCuerpoConst.TrianguloInvert, TipoCuerpoConst.Rectangulo, TipoCuerpoConst.Ovalado
+    };
+}
+
+<div class="lyra-wrap-sm">
+    <div class="page-header">
+        <div>
+            <h1 class="lyra-title" style="font-size:1.9rem">Nueva prenda</h1>
+            <p style="color:#888;margin:.3rem 0 0;font-size:.9rem">Completa los datos para publicar</p>
+        </div>
+        <a asp-action="MisPrendas" class="btn-lyra-ghost btn-lyra-sm">← Mis prendas</a>
+    </div>
+
+    <form asp-action="CrearPrenda" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <div class="lyra-card">
+            <p style="font-weight:500;color:#1a1a1a;margin:0 0 1rem">Información básica</p>
+            <div class="mb-3">
+                <label class="lyra-label">Nombre *</label>
+                <input class="lyra-input" type="text" name="nombre"
+                       placeholder="Ej. Vestido floral manga larga" required />
+            </div>
+            <div class="mb-3">
+                <label class="lyra-label">Descripción</label>
+                <textarea class="lyra-input" name="descripcion" rows="2"
+                          placeholder="Materiales, ocasión, detalles..."></textarea>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="lyra-label">Categoría *</label>
+                    <select class="lyra-select" name="categoria" required>
+                        <option value="">— Seleccionar —</option>
+                        @foreach (var cat in Enum.GetValues<CategoriaRopa>())
+                        {
+                            <option value="@cat">@cat</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="lyra-label">Talla *</label>
+                    <select class="lyra-select" name="talla" required>
+                        @foreach (var t in Enum.GetValues<TallaPrenda>())
+                        {
+                            <option value="@t">@t</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="lyra-label">Color *</label>
+                    <input class="lyra-input" type="text" name="color"
+                           placeholder="Ej. Negro, Azul marino" required />
+                </div>
+                <div class="col-md-6">
+                    <label class="lyra-label">Precio (S/) *</label>
+                    <div class="medida-box">
+                        <input class="lyra-input" type="number" step="0.01" name="precio"
+                               placeholder="0.00" min="0" required
+                               style="padding-left:2rem" />
+                        <span class="medida-unit" style="left:12px;right:auto">S/</span>
+                    </div>
+                </div>
+                <div class="col-12">
+    <label class="lyra-label">Imagen de la prenda</label>
+    <input class="lyra-input" type="file" name="imagenFile"
+           accept="image/jpeg,image/png,image/webp"
+           style="padding:.5rem 1rem" />
+    <p style="font-size:.76rem;color:#aaa;margin-top:.3rem">
+        JPG, PNG o WEBP · Máx. 5 MB
+    </p>
+</div>
+            </div>
+        </div>
+
+        <div class="lyra-card">
+            <p class="lyra-label mb-1">Tipos de cuerpo compatibles *</p>
+            <p style="font-size:.78rem;color:#aaa;margin-bottom:.9rem">Selecciona uno o más</p>
+            <div class="check-grid">
+                @foreach (var tipo in tiposCuerpo)
+                {
+                    var idT = "tc_" + tipo.Replace(" ", "_");
+                    <div>
+                        <input class="check-item" type="checkbox"
+                               name="tiposCuerpo" id="@idT" value="@tipo" />
+                        <label class="check-label" for="@idT">@tipo</label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="lyra-card">
+            <p class="lyra-label mb-1">Tonos de piel compatibles *</p>
+            <p style="font-size:.78rem;color:#aaa;margin-bottom:.9rem">Selecciona uno o más</p>
+            <div class="check-grid">
+                @foreach (var tono in Enum.GetValues<TonoPielEnum>())
+                {
+                    var idP = "tp_" + tono;
+                    <div>
+                        <input class="check-item" type="checkbox"
+                               name="tonosPiel" id="@idP" value="@tono" />
+                        <label class="check-label" for="@idP">@tono</label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <button type="submit" class="btn-lyra w-100" style="padding:.9rem">
+            Publicar prenda ✓
+        </button>
+    </form>
+</div>

@@ -1,0 +1,148 @@
+@model Lyra.Models.Prenda
+@using Lyra.Enums
+@using Lyra.Services
+@{ ViewData["Title"] = "Editar Prenda"; }
+
+@{
+    var tiposActivos = (Model.TiposCuerpoCompatibles ?? "").Split(',')
+                       .Select(t => t.Trim()).ToList();
+    var tonosActivos = (Model.TonosPielCompatibles ?? "").Split(',')
+                       .Select(t => t.Trim()).ToList();
+    var tiposCuerpo  = new[]
+    {
+        TipoCuerpoConst.RelojDeArena,  TipoCuerpoConst.Triangulo,
+        TipoCuerpoConst.TrianguloInvert, TipoCuerpoConst.Rectangulo, TipoCuerpoConst.Ovalado
+    };
+}
+
+<div class="lyra-wrap-sm">
+    <div class="page-header">
+        <div>
+            <h1 class="lyra-title" style="font-size:1.9rem">Editar prenda</h1>
+            <p style="color:#888;margin:.3rem 0 0;font-size:.9rem">@Model.Nombre</p>
+        </div>
+        <a asp-action="MisPrendas" class="btn-lyra-ghost btn-lyra-sm">← Mis prendas</a>
+    </div>
+
+    <form asp-action="EditarPrenda" asp-route-id="@Model.Id"
+      method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <div class="lyra-card">
+            <div class="mb-3">
+                <label class="lyra-label">Nombre *</label>
+                <input class="lyra-input" type="text" name="nombre" value="@Model.Nombre" required />
+            </div>
+            <div class="mb-3">
+                <label class="lyra-label">Descripción</label>
+                <textarea class="lyra-input" name="descripcion" rows="2">@Model.Descripcion</textarea>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="lyra-label">Categoría</label>
+                    <select class="lyra-select" name="categoria">
+                        @foreach (var cat in Enum.GetValues<CategoriaRopa>())
+                        {
+                            if (Model.Categoria == cat)
+                            {
+                                <option value="@cat" selected>@cat</option>
+                            }
+                            else
+                            {
+                                <option value="@cat">@cat</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="lyra-label">Talla</label>
+                    <select class="lyra-select" name="talla">
+                        @foreach (var t in Enum.GetValues<TallaPrenda>())
+                        {
+                            if (Model.Talla == t)
+                            {
+                                <option value="@t" selected>@t</option>
+                            }
+                            else
+                            {
+                                <option value="@t">@t</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="lyra-label">Estado</label>
+                    <select class="lyra-select" name="estado">
+                        @foreach (var e in Enum.GetValues<EstadoPrenda>())
+                        {
+                            if (Model.Estado == e)
+                            {
+                                <option value="@e" selected>@e</option>
+                            }
+                            else
+                            {
+                                <option value="@e">@e</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="lyra-label">Color</label>
+                    <input class="lyra-input" type="text" name="color" value="@Model.Color" />
+                </div>
+                <div class="col-md-6">
+                    <label class="lyra-label">Precio (S/)</label>
+                    <input class="lyra-input" type="number" step="0.01"
+                           name="precio" value="@Model.Precio" min="0" />
+                </div>
+                <div class="col-md-6">
+    <label class="lyra-label">Nueva imagen</label>
+    @if (!string.IsNullOrEmpty(Model.ImagenUrl))
+    {
+        <img src="@Model.ImagenUrl" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:.5rem" />
+        <p style="font-size:.75rem;color:#aaa;margin-bottom:.4rem">Sube una nueva para reemplazarla</p>
+    }
+    <input class="lyra-input" type="file" name="imagenFile"
+           accept="image/jpeg,image/png,image/webp"
+           style="padding:.5rem 1rem" />
+</div>
+            </div>
+        </div>
+
+        <div class="lyra-card">
+            <p class="lyra-label mb-1">Tipos de cuerpo compatibles</p>
+            <div class="check-grid mt-2">
+                @foreach (var tipo in tiposCuerpo)
+                {
+                    var idT = "tc_" + tipo.Replace(" ", "_");
+                    <div>
+                        <input class="check-item" type="checkbox" name="tiposCuerpo"
+                               id="@idT" value="@tipo"
+                               @(tiposActivos.Contains(tipo) ? "checked" : "") />
+                        <label class="check-label" for="@idT">@tipo</label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="lyra-card">
+            <p class="lyra-label mb-1">Tonos de piel compatibles</p>
+            <div class="check-grid mt-2">
+                @foreach (var tono in Enum.GetValues<TonoPielEnum>())
+                {
+                    var idP = "tp_" + tono;
+                    <div>
+                        <input class="check-item" type="checkbox" name="tonosPiel"
+                               id="@idP" value="@tono"
+                               @(tonosActivos.Contains(tono.ToString()) ? "checked" : "") />
+                        <label class="check-label" for="@idP">@tono</label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <button type="submit" class="btn-lyra w-100" style="padding:.9rem">
+            Guardar cambios ✓
+        </button>
+    </form>
+</div>

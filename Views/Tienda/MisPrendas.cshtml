@@ -1,0 +1,84 @@
+@model List<Lyra.Models.Prenda>
+@using Lyra.Enums
+@{ ViewData["Title"] = "Mis Prendas"; }
+
+<div class="lyra-wrap">
+    <div class="page-header">
+        <div>
+            <h1 class="lyra-title" style="font-size:1.9rem">Mis prendas</h1>
+            <p style="color:#888;margin:.3rem 0 0;font-size:.9rem">
+                @Model.Count publicada@(Model.Count != 1 ? "s" : "")
+            </p>
+        </div>
+        <a asp-action="CrearPrenda" class="btn-lyra">+ Nueva prenda</a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-3 py-2 px-3" style="font-size:.9rem">
+            ✓ @TempData["Success"]
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">👗</div>
+            <p class="empty-title">Aún no publicaste prendas</p>
+            <p class="empty-sub">Sube tu primera prenda para aparecer en las recomendaciones.</p>
+            <a asp-action="CrearPrenda" class="btn-lyra mt-3">+ Publicar prenda</a>
+        </div>
+    }
+    else
+    {
+        <div class="prendas-grid">
+            @foreach (var p in Model)
+            {
+                <div class="pcard">
+                    @if (!string.IsNullOrEmpty(p.ImagenUrl))
+                    {
+                        <img src="@p.ImagenUrl" class="pcard-img" alt="@p.Nombre"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" />
+                        <div class="pcard-img-ph" style="display:none">👗</div>
+                    }
+                    else
+                    {
+                        <div class="pcard-img-ph">👗</div>
+                    }
+
+                    <div class="pcard-body">
+                        <p class="pcard-cat">@p.Categoria</p>
+                        <p class="pcard-name">@p.Nombre</p>
+
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+                            <span style="font-weight:500;color:#1a1a1a">S/ @p.Precio.ToString("0.00")</span>
+                            <span class="pill pill-cream">@p.Talla</span>
+                        </div>
+
+                        <span class="pill @(p.Estado == EstadoPrenda.Disponible ? "pill-green" :
+                                            p.Estado == EstadoPrenda.Agotado    ? "pill-red"   : "pill-yellow")
+                              mb-3 d-block" style="width:fit-content">
+                            @p.Estado
+                        </span>
+
+                        <div style="display:flex;gap:.4rem">
+                            <a asp-action="EditarPrenda" asp-route-id="@p.Id"
+                               class="btn-lyra-ghost btn-lyra-sm"
+                               style="flex:1;justify-content:center">
+                                ✏ Editar
+                            </a>
+                            <form asp-action="EliminarPrenda" method="post" style="flex:1"
+                                  onsubmit="return confirm('¿Eliminar @p.Nombre?')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@p.Id" />
+                                <button class="btn-lyra-danger w-100" style="height:100%">
+                                    ✕ Eliminar
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

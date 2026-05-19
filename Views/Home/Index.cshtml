@@ -1,0 +1,65 @@
+﻿@{ ViewData["Title"] = "LYRA — Moda para tu cuerpo"; }
+
+<div style="font-family:'DM Sans',sans-serif">
+
+    <!-- Hero -->
+    <section style="background:#1a1a1a;color:#fff;padding:5rem 1rem;text-align:center">
+        <p style="font-size:.82rem;letter-spacing:.15em;text-transform:uppercase;color:#c9b99a;margin-bottom:1rem">
+            Moda inteligente y personalizada
+        </p>
+        <h1 style="font-family:'Playfair Display',serif;font-size:clamp(2.5rem,6vw,4rem);font-weight:400;margin:0 0 1.25rem;line-height:1.15">
+            Ropa hecha para<br>
+            <span style="font-style:italic;color:#c9b99a">tu cuerpo</span>
+        </h1>
+        <p style="color:#aaa;font-size:1rem;max-width:480px;margin:0 auto 2.5rem;line-height:1.7">
+            LYRA analiza tu tipo de cuerpo y tono de piel para recomendarte
+            prendas que realmente te quedan bien.
+        </p>
+        <div style="display:flex;justify-content:center;gap:1rem;flex-wrap:wrap">
+            <a asp-area="Identity" asp-page="/Account/Register"
+               style="background:#c9b99a;color:#1a1a1a;text-decoration:none;border-radius:10px;padding:.9rem 2rem;font-weight:500;font-size:.95rem">
+                Empieza gratis →
+            </a>
+            <a asp-area="Identity" asp-page="/Account/Login"
+               style="background:transparent;color:#fff;text-decoration:none;border:1px solid #444;border-radius:10px;padding:.9rem 2rem;font-size:.95rem">
+                Ya tengo cuenta
+            </a>
+        </div>
+    </section>
+
+    <!-- Cómo funciona -->
+    <section style="max-width:1000px;margin:5rem auto;padding:0 1rem">
+        <p style="text-align:center;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:#aaa;margin-bottom:.5rem">¿Cómo funciona?</p>
+        <h2 style="font-family:'Playfair Display',serif;font-size:2rem;text-align:center;color:#1a1a1a;margin-bottom:3rem">3 pasos simples</h2>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:2rem">
+            @foreach (var (num, titulo, desc) in new[] {
+                ("01", "Ingresa tus medidas",     "Registra hombros, busto, cintura y cadera. Nuestro algoritmo detecta tu tipo de cuerpo al instante."),
+                ("02", "Recibe recomendaciones",  "LYRA cruza tu perfil corporal con el catálogo de tiendas locales y te muestra solo lo que te favorece."),
+                ("03", "Guarda tus favoritas",    "Guarda las prendas que más te gusten y vuelve a verlas cuando quieras.")
+            })
+            {
+                <div style="background:#fff;border:1px solid #ede9e3;border-radius:16px;padding:2rem">
+                    <p style="font-family:'Playfair Display',serif;font-size:2rem;color:#c9b99a;margin:0 0 .75rem">@num</p>
+                    <p style="font-weight:500;color:#1a1a1a;margin:0 0 .5rem">@titulo</p>
+                    <p style="font-size:.88rem;color:#888;margin:0;line-height:1.65">@desc</p>
+                </div>
+            }
+        </div>
+    </section>
+
+    <!-- CTA final -->
+    <section style="background:#faf8f5;border-top:1px solid #ede9e3;padding:4rem 1rem;text-align:center">
+        <h2 style="font-family:'Playfair Display',serif;font-size:1.8rem;color:#1a1a1a;margin-bottom:.75rem">
+            ¿Tienes una tienda de ropa?
+        </h2>
+        <p style="color:#888;font-size:.92rem;margin-bottom:2rem">
+            Regístrate con <strong>tienda.com</strong> y llega a clientas que buscan
+            exactamente lo que tú vendes.
+        </p>
+        <a asp-area="Identity" asp-page="/Account/Register"
+           style="background:#1a1a1a;color:#fff;text-decoration:none;border-radius:10px;padding:.85rem 2rem;font-size:.9rem">
+            Registrar mi tienda →
+        </a>
+    </section>
+</div>

@@ -1,0 +1,94 @@
+@using Lyra.Enums
+@using Lyra.Services
+@{ ViewData["Title"] = "Crear Prenda — Admin"; }
+
+@{
+    var tiposCuerpo = new[] {
+        TipoCuerpoConst.RelojDeArena, TipoCuerpoConst.Triangulo,
+        TipoCuerpoConst.TrianguloInvert, TipoCuerpoConst.Rectangulo, TipoCuerpoConst.Ovalado
+    };
+}
+
+<div class="lyra-wrap-sm">
+    <div class="page-header">
+        <div>
+            <h1 class="lyra-title" style="font-size:1.9rem">Nueva prenda (Admin)</h1>
+            <p style="color:#888;margin:.3rem 0 0;font-size:.9rem">Prenda sin tienda asociada</p>
+        </div>
+        <a asp-action="Prendas" class="btn-lyra-ghost btn-lyra-sm">← Catálogo</a>
+    </div>
+
+    <%-- Reutilizamos el mismo form que Tienda/CrearPrenda --%>
+    <form asp-action="CrearPrenda" method="post">
+        @Html.AntiForgeryToken()
+        <div class="lyra-card">
+            <div class="mb-3">
+                <label class="lyra-label">Nombre *</label>
+                <input class="lyra-input" type="text" name="nombre" placeholder="Nombre de la prenda" required />
+            </div>
+            <div class="mb-3">
+                <label class="lyra-label">Descripción</label>
+                <textarea class="lyra-input" name="descripcion" rows="2"></textarea>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="lyra-label">Categoría *</label>
+                    <select class="lyra-select" name="categoria" required>
+                        <option value="">— Seleccionar —</option>
+                        @foreach (var cat in Enum.GetValues<CategoriaRopa>())
+                        { <option value="@cat">@cat</option> }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="lyra-label">Talla *</label>
+                    <select class="lyra-select" name="talla">
+                        @foreach (var t in Enum.GetValues<TallaPrenda>())
+                        { <option value="@t">@t</option> }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="lyra-label">Color *</label>
+                    <input class="lyra-input" type="text" name="color" required />
+                </div>
+                <div class="col-md-6">
+                    <label class="lyra-label">Precio (S/)</label>
+                    <input class="lyra-input" type="number" step="0.01" name="precio" placeholder="0.00" min="0" required />
+                </div>
+                <div class="col-12">
+                    <label class="lyra-label">URL imagen</label>
+                    <input class="lyra-input" type="url" name="imagenUrl" placeholder="https://..." />
+                </div>
+            </div>
+        </div>
+
+        <div class="lyra-card">
+            <p class="lyra-label mb-2">Tipos de cuerpo compatibles</p>
+            <div class="check-grid">
+                @foreach (var tipo in tiposCuerpo)
+                {
+                    var id = "tc_" + tipo.Replace(" ", "_");
+                    <div>
+                        <input class="check-item" type="checkbox" name="tiposCuerpo" id="@id" value="@tipo" />
+                        <label class="check-label" for="@id">@tipo</label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="lyra-card">
+            <p class="lyra-label mb-2">Tonos de piel compatibles</p>
+            <div class="check-grid">
+                @foreach (var tono in Enum.GetValues<TonoPielEnum>())
+                {
+                    var id = "tp_" + tono;
+                    <div>
+                        <input class="check-item" type="checkbox" name="tonosPiel" id="@id" value="@tono" />
+                        <label class="check-label" for="@id">@tono</label>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <button type="submit" class="btn-lyra w-100" style="padding:.9rem">Publicar prenda ✓</button>
+    </form>
+</div>

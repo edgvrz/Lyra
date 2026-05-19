@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — LYRA</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Lyra.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <nav style="background:#fff;border-bottom:1px solid #ede9e3;padding:.8rem 0;font-family:'DM Sans',sans-serif">
+        <div style="max-width:1100px;margin:0 auto;padding:0 1rem;display:flex;justify-content:space-between;align-items:center">
+
+            <!-- Logo -->
+            <a asp-controller="Home" asp-action="Index"
+               style="font-family:'Playfair Display',serif;font-size:1.5rem;color:#1a1a1a;text-decoration:none;letter-spacing:.02em">
+                LYRA
+            </a>
+
+            <!-- Nav por rol -->
+            <div style="display:flex;align-items:center;gap:1.5rem;font-size:.88rem">
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a asp-controller="Admin" asp-action="Dashboard"   class="nav-lnk">Panel</a>
+                        <a asp-controller="Admin" asp-action="Usuarios"    class="nav-lnk">Usuarios</a>
+                        <a asp-controller="Admin" asp-action="Tiendas"     class="nav-lnk">Tiendas</a>
+                        <a asp-controller="Admin" asp-action="Prendas"     class="nav-lnk">Prendas</a>
+                    }
+                    else if (User.IsInRole("Tienda"))
+                    {
+                        <a asp-controller="Tienda" asp-action="Dashboard"  class="nav-lnk">Mi tienda</a>
+                        <a asp-controller="Tienda" asp-action="MisPrendas" class="nav-lnk">Prendas</a>
+                        <a asp-controller="Tienda" asp-action="CrearPrenda" class="nav-lnk">+ Publicar</a>
+                    }
+                    else if (User.IsInRole("Cliente"))
+                    {
+                        <a asp-controller="Cliente" asp-action="Dashboard"       class="nav-lnk">Inicio</a>
+                        <a asp-controller="Cliente" asp-action="Recomendaciones" class="nav-lnk">✨ Para ti</a>
+                        <a asp-controller="Cliente" asp-action="Favoritos"       class="nav-lnk">♥ Guardadas</a>
+                    }
+
+                    <!-- Logout -->
+                    <form asp-area="Identity" asp-page="/Account/Logout"
+                          asp-route-returnUrl="/" method="post" style="margin:0">
+                        @Html.AntiForgeryToken()
+                        <button type="submit"
+                                style="background:none;border:1px solid #ddd;border-radius:8px;padding:.3rem .85rem;font-family:'DM Sans',sans-serif;font-size:.83rem;color:#555;cursor:pointer;transition:border-color .2s">
+                            Salir
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <a asp-area="Identity" asp-page="/Account/Login"    class="nav-lnk">Entrar</a>
+                    <a asp-area="Identity" asp-page="/Account/Register"
+                       style="background:#1a1a1a;color:#fff;text-decoration:none;border-radius:8px;padding:.4rem 1rem;font-size:.85rem">
+                        Registrarse
+                    </a>
+                }
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mensajes globales de error -->
+    <div style="max-width:1100px;margin:0 auto;padding:0 1rem">
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger border-0 rounded-3 mt-3 py-2 px-3" style="font-size:.88rem">
+                ⚠ @TempData["Error"]
+            </div>
+        }
+    </div>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer style="border-top:1px solid #ede9e3;padding:2rem 1rem;margin-top:4rem;text-align:center;font-family:'DM Sans',sans-serif;font-size:.8rem;color:#bbb">
+        LYRA © @DateTime.Now.Year — Moda inteligente para ti
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

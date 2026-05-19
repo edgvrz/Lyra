@@ -1,0 +1,39 @@
+@model Lyra.Models.Tienda
+@{ ViewData["Title"] = "Solicitud rechazada"; }
+
+<div style="font-family:'DM Sans',sans-serif;max-width:560px;margin:5rem auto;padding:0 1rem;text-align:center">
+
+    <div style="font-size:3.5rem;margin-bottom:1.5rem">❌</div>
+
+    <h1 style="font-family:'Playfair Display',serif;font-size:1.8rem;color:#1a1a1a;margin-bottom:.75rem">
+        Solicitud no aprobada
+    </h1>
+
+    <p style="color:#888;font-size:.95rem;line-height:1.7;margin-bottom:1.5rem">
+        Lamentablemente tu solicitud para <strong style="color:#1a1a1a">@Model.Nombre</strong>
+        no fue aprobada.
+    </p>
+
+    @if (!string.IsNullOrEmpty(Model.MotivoRechazo))
+    {
+        <div style="background:#fdf0ee;border:1px solid #f1c0bb;border-radius:12px;padding:1.25rem;margin-bottom:2rem;text-align:left">
+            <p style="font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:#c0392b;margin-bottom:.5rem">
+                Motivo
+            </p>
+            <p style="font-size:.9rem;color:#7a2a2a;margin:0">@Model.MotivoRechazo</p>
+        </div>
+    }
+
+    <p style="font-size:.82rem;color:#bbb;margin-bottom:1.5rem">
+        Para más información escríbenos a
+        <a href="mailto:admin@lyra.com" style="color:#888">admin@lyra.com</a>
+    </p>
+
+    <form asp-area="Identity" asp-page="/Account/Logout"
+          asp-route-returnUrl="/" method="post">
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn-lyra-ghost" style="width:100%;justify-content:center">
+            Cerrar sesión
+        </button>
+    </form>
+</div>
