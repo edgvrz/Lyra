@@ -80,7 +80,8 @@ Si no existe la base de datos:
 ```bash
 dotnet ef database update
 ```
-
+USAR SI NO DESCARGA
+dotnet tool install --global dotnet-ef
 ---
 
 ## 💡 Propuesta de valor
