@@ -1,96 +1,197 @@
 ﻿<!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="plateado">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] — LYRA</title>
+    <title>@ViewData["Title"] — AURA</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Lyra.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <nav style="background:#fff;border-bottom:1px solid #ede9e3;padding:.8rem 0;font-family:'DM Sans',sans-serif">
-        <div style="max-width:1100px;margin:0 auto;padding:0 1rem;display:flex;justify-content:space-between;align-items:center">
 
-            <!-- Logo -->
-            <a asp-controller="Home" asp-action="Index"
-               style="font-family:'Playfair Display',serif;font-size:1.5rem;color:#1a1a1a;text-decoration:none;letter-spacing:.02em">
-                LYRA
-            </a>
+<nav class="aura-nav">
+    <div class="aura-nav-inner">
 
-            <!-- Nav por rol -->
-            <div style="display:flex;align-items:center;gap:1.5rem;font-size:.88rem">
+        <!-- Logo + Nombre -->
+        <a asp-controller="Home" asp-action="Index" class="aura-brand">
+            <img src="~/img/aura-logo.png" alt="AURA" class="aura-logo-img"
+                 onerror="this.style.display='none'" />
+            <span class="aura-brand-name">AURA</span>
+        </a>
 
-                @if (User.Identity?.IsAuthenticated == true)
+        <!-- Links por rol -->
+        <div class="aura-nav-links">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                if (User.IsInRole("Admin"))
                 {
-                    @if (User.IsInRole("Admin"))
-                    {
-                        <a asp-controller="Admin" asp-action="Dashboard"   class="nav-lnk">Panel</a>
-                        <a asp-controller="Admin" asp-action="Usuarios"    class="nav-lnk">Usuarios</a>
-                        <a asp-controller="Admin" asp-action="Tiendas"     class="nav-lnk">Tiendas</a>
-                        <a asp-controller="Admin" asp-action="Prendas"     class="nav-lnk">Prendas</a>
-                    }
-                    else if (User.IsInRole("Tienda"))
-                    {
-                        <a asp-controller="Tienda" asp-action="Dashboard"  class="nav-lnk">Mi tienda</a>
-                        <a asp-controller="Tienda" asp-action="MisPrendas" class="nav-lnk">Prendas</a>
-                        <a asp-controller="Tienda" asp-action="CrearPrenda" class="nav-lnk">+ Publicar</a>
-                    }
-                    else if (User.IsInRole("Cliente"))
-                    {
-                        <a asp-controller="Cliente" asp-action="Dashboard"       class="nav-lnk">Inicio</a>
-                        <a asp-controller="Cliente" asp-action="Recomendaciones" class="nav-lnk">✨ Para ti</a>
-                        <a asp-controller="Cliente" asp-action="Favoritos"       class="nav-lnk">♥ Guardadas</a>
-                    }
-
-                    <!-- Logout -->
-                    <form asp-area="Identity" asp-page="/Account/Logout"
-                          asp-route-returnUrl="/" method="post" style="margin:0">
-                        @Html.AntiForgeryToken()
-                        <button type="submit"
-                                style="background:none;border:1px solid #ddd;border-radius:8px;padding:.3rem .85rem;font-family:'DM Sans',sans-serif;font-size:.83rem;color:#555;cursor:pointer;transition:border-color .2s">
-                            Salir
-                        </button>
-                    </form>
+                    <a asp-controller="Admin" asp-action="Dashboard"  class="aura-nav-link">Panel</a>
+                    <a asp-controller="Admin" asp-action="Usuarios"   class="aura-nav-link">Usuarias</a>
+                    <a asp-controller="Admin" asp-action="Tiendas"    class="aura-nav-link">Tiendas</a>
+                    <a asp-controller="Admin" asp-action="Prendas"    class="aura-nav-link">Catálogo</a>
                 }
-                else
+                else if (User.IsInRole("Tienda"))
                 {
-                    <a asp-area="Identity" asp-page="/Account/Login"    class="nav-lnk">Entrar</a>
-                    <a asp-area="Identity" asp-page="/Account/Register"
-                       style="background:#1a1a1a;color:#fff;text-decoration:none;border-radius:8px;padding:.4rem 1rem;font-size:.85rem">
-                        Registrarse
-                    </a>
+                    <a asp-controller="Tienda" asp-action="Dashboard"   class="aura-nav-link">Mi tienda</a>
+                    <a asp-controller="Tienda" asp-action="MisPrendas"  class="aura-nav-link">Prendas</a>
+                    <a asp-controller="Tienda" asp-action="CrearPrenda" class="aura-nav-link">+ Publicar</a>
                 }
-            </div>
+                else if (User.IsInRole("Cliente"))
+                {
+                    <a asp-controller="Cliente" asp-action="Dashboard"       class="aura-nav-link">Inicio</a>
+                    <a asp-controller="Cliente" asp-action="Recomendaciones" class="aura-nav-link">✨ Para ti</a>
+                    <a asp-controller="Cliente" asp-action="Favoritos"       class="aura-nav-link">♥ Guardadas</a>
+                }
+            }
         </div>
-    </nav>
 
-    <!-- Mensajes globales de error -->
-    <div style="max-width:1100px;margin:0 auto;padding:0 1rem">
-        @if (TempData["Error"] != null)
-        {
-            <div class="alert alert-danger border-0 rounded-3 mt-3 py-2 px-3" style="font-size:.88rem">
-                ⚠ @TempData["Error"]
+        <!-- Derecha: selector de tema + auth -->
+        <div class="aura-nav-right">
+
+            <!-- Theme picker -->
+            <div class="theme-picker" id="themePicker">
+                <button class="theme-toggle-btn" id="themeToggleBtn" title="Cambiar tema de color">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1"  x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22"   x2="5.64"  y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1"  y1="12" x2="3"  y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22"  y1="19.78" x2="5.64"  y2="18.36"/>
+                        <line x1="18.36" y1="5.64"  x2="19.78" y2="4.22"/>
+                    </svg>
+                </button>
+                <div class="theme-dropdown" id="themeDropdown">
+                    <p class="theme-dd-title">Tema de color</p>
+                    <div class="theme-options">
+                        <button class="theme-option" data-theme="plateado">
+                            <span class="theme-dot" style="background:linear-gradient(135deg,#64748b,#94a3b8)"></span>
+                            Plateado
+                        </button>
+                        <button class="theme-option" data-theme="rojo">
+                            <span class="theme-dot" style="background:linear-gradient(135deg,#c0392b,#e74c3c)"></span>
+                            Rojo
+                        </button>
+                        <button class="theme-option" data-theme="cereza">
+                            <span class="theme-dot" style="background:linear-gradient(135deg,#8e1b4b,#c0395b)"></span>
+                            Cereza
+                        </button>
+                        <button class="theme-option" data-theme="rosa">
+                            <span class="theme-dot" style="background:linear-gradient(135deg,#d6337a,#ec4899)"></span>
+                            Rosa
+                        </button>
+                    </div>
+                </div>
             </div>
-        }
+
+            <!-- Auth -->
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <form asp-area="Identity" asp-page="/Account/Logout"
+                      asp-route-returnUrl="/" method="post" style="margin:0">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="aura-logout-btn">Salir</button>
+                </form>
+            }
+            else
+            {
+                <a asp-area="Identity" asp-page="/Account/Login" class="aura-nav-link">
+                    Entrar
+                </a>
+                <a asp-area="Identity" asp-page="/Account/Register" class="aura-register-btn">
+                    Registrarse
+                </a>
+            }
+        </div>
     </div>
+</nav>
 
-    <main>
-        @RenderBody()
-    </main>
+<!-- Mensajes globales -->
+@if (TempData["Error"] != null)
+{
+    <div class="aura-alert-global">
+        <div class="lyra-wrap" style="padding-top:0;padding-bottom:0">
+            ⚠ @TempData["Error"]
+        </div>
+    </div>
+}
 
-    <footer style="border-top:1px solid #ede9e3;padding:2rem 1rem;margin-top:4rem;text-align:center;font-family:'DM Sans',sans-serif;font-size:.8rem;color:#bbb">
-        LYRA © @DateTime.Now.Year — Moda inteligente para ti
-    </footer>
+<main>@RenderBody()</main>
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+<footer class="aura-footer">
+    <div class="aura-footer-inner">
+        <div class="aura-footer-brand">
+            <img src="~/img/aura-logo.png" alt="AURA"
+                 style="height:26px;opacity:.75;filter:grayscale(.2)"
+                 onerror="this.style.display='none'" />
+            AURA
+        </div>
+        <p style="font-size:.78rem;color:var(--ctx2)">
+            © @DateTime.Now.Year AURA — Moda inteligente para ti
+        </p>
+        <p style="font-size:.72rem;color:var(--ctx2);opacity:.5">
+            tus medidas exactas
+        </p>
+    </div>
+</footer>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+
+<!-- ═══ SISTEMA DE TEMAS AURA ═══ -->
+<script>
+(function () {
+    // Aplicar tema guardado antes de renderizar para evitar flash
+    var saved = localStorage.getItem('aura-theme') || 'plateado';
+    document.documentElement.setAttribute('data-theme', saved);
+
+    function applyTheme(t) {
+        document.documentElement.setAttribute('data-theme', t);
+        localStorage.setItem('aura-theme', t);
+        document.querySelectorAll('.theme-option').forEach(function (b) {
+            b.classList.toggle('active', b.dataset.theme === t);
+        });
+    }
+
+    // Marcar activo al cargar
+    applyTheme(saved);
+
+    // Abrir/cerrar dropdown
+    var toggleBtn = document.getElementById('themeToggleBtn');
+    var dropdown  = document.getElementById('themeDropdown');
+
+    toggleBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        dropdown.classList.toggle('open');
+    });
+
+    // Seleccionar tema
+    document.querySelectorAll('.theme-option').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            applyTheme(btn.dataset.theme);
+            dropdown.classList.remove('open');
+        });
+    });
+
+    // Cerrar al hacer clic fuera
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('#themePicker')) {
+            dropdown.classList.remove('open');
+        }
+    });
+})();
+</script>
+
+@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

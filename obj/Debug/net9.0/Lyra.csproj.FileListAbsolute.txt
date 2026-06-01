@@ -407,5 +407,6 @@ E:\Unsa3\Marketing\Proyecto\Lyra\bin\Debug\net9.0\zh-Hans\Microsoft.CodeAnalysis
 E:\Unsa3\Marketing\Proyecto\Lyra\bin\Debug\net9.0\zh-Hant\Microsoft.CodeAnalysis.Scripting.resources.dll
 E:\Unsa3\Marketing\Proyecto\Lyra\obj\Debug\net9.0\compressed\1cuitlrtjl-owsj730uqg.gz
 E:\Unsa3\Marketing\Proyecto\Lyra\obj\Debug\net9.0\compressed\lccr9inhvo-owsj730uqg.gz
-E:\Unsa3\Marketing\Proyecto\Lyra\obj\Debug\net9.0\compressed\oxmsxrbw15-1i9gytwb5g.gz
 E:\Unsa3\Marketing\Proyecto\Lyra\bin\Debug\net9.0\app.db
+E:\Unsa3\Marketing\Proyecto\Lyra\obj\Debug\net9.0\Lyra.sourcelink.json
+E:\Unsa3\Marketing\Proyecto\Lyra\obj\Debug\net9.0\compressed\oxmsxrbw15-0a5veqszpm.gz
