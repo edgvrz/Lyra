@@ -16,89 +16,153 @@
         }
         else
         {
-            <div style="width:100%;height:280px;background:#f5f1eb;
+            <div style="width:100%;height:260px;background:var(--grads);
                         display:flex;align-items:center;justify-content:center;
                         font-size:4rem">👗</div>
         }
 
         <div style="padding:1.75rem">
-            <p class="pcard-cat">@Model.Categoria</p>
+            <p style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;
+                      color:var(--ctx2);margin-bottom:.3rem">@Model.Categoria</p>
+
             <h1 class="lyra-title" style="font-size:1.6rem;margin-bottom:.5rem">
                 @Model.Nombre
             </h1>
 
             @if (!string.IsNullOrEmpty(Model.Descripcion))
             {
-                <p style="color:#666;font-size:.93rem;line-height:1.7;margin-bottom:1rem">
+                <p style="color:var(--ctx2);font-size:.93rem;line-height:1.7;margin-bottom:1rem">
                     @Model.Descripcion
                 </p>
             }
 
-            <!-- Precio y talla -->
-            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem">
-                <span style="font-family:'Playfair Display',serif;font-size:1.8rem;color:#1a1a1a">
+            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;flex-wrap:wrap">
+                <span style="font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--ctx)">
                     S/ @Model.Precio.ToString("0.00")
                 </span>
                 <span class="pill pill-cream">@Model.Talla</span>
-                <span class="pill" style="background:#f0f0f0;color:#555">@Model.Color</span>
-            </div>
+                @if (!string.IsNullOrEmpty(Model.Color))
+                {
+                    <span class="pill pill-cream">@Model.Color</span>
+                }
 
-            <!-- Compatibilidad -->
-            <div style="background:#faf8f5;border-radius:12px;padding:1rem;margin-bottom:1.25rem">
-                <p class="lyra-label mb-2">Compatible con</p>
-                <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.6rem">
-                    @foreach (var tipo in Model.TiposCuerpoCompatibles.Split(',').Select(t => t.Trim()).Where(t => !string.IsNullOrEmpty(t)))
-                    {
-                        <span class="pill pill-dark">@tipo</span>
-                    }
-                </div>
-                <div style="display:flex;flex-wrap:wrap;gap:.4rem">
-                    @foreach (var tono in Model.TonosPielCompatibles.Split(',').Select(t => t.Trim()).Where(t => !string.IsNullOrEmpty(t)))
-                    {
-                        <span class="pill pill-cream">@tono</span>
-                    }
-                </div>
+                <!-- Badge de stock -->
+                @if (Model.Stock > 5)
+                {
+                    <span class="pill pill-green">✓ @Model.Stock disponibles</span>
+                }
+                else if (Model.Stock > 0)
+                {
+                    <span class="pill pill-yellow">⚠ Últimas @Model.Stock unidades</span>
+                }
+                else
+                {
+                    <span class="pill pill-red">Sin stock</span>
+                }
             </div>
 
             <!-- Tienda -->
             @if (Model.Tienda != null)
             {
-                <div style="border-top:1px solid #ede9e3;padding-top:1rem;margin-bottom:1.25rem">
+                <div style="border-top:1px solid var(--cbr);padding-top:1rem;margin-bottom:1.25rem">
                     <p class="lyra-label mb-1">Tienda</p>
-                    <p style="font-weight:500;color:#1a1a1a;margin:0">@Model.Tienda.Nombre</p>
+                    <p style="font-weight:500;color:var(--ctx);margin:0">@Model.Tienda.Nombre</p>
                     @if (!string.IsNullOrEmpty(Model.Tienda.Ciudad))
                     {
-                        <p style="font-size:.82rem;color:#aaa;margin:.2rem 0 0">
+                        <p style="font-size:.82rem;color:var(--ctx2);margin:.2rem 0 0">
                             📍 @Model.Tienda.Ciudad
                         </p>
                     }
                     @if (!string.IsNullOrEmpty(Model.Tienda.Telefono))
                     {
-                        <p style="font-size:.82rem;color:#888;margin:.2rem 0 0">
+                        <p style="font-size:.82rem;color:var(--ctx2);margin:.2rem 0 0">
                             📞 @Model.Tienda.Telefono
                         </p>
                     }
                 </div>
             }
 
-            <!-- Botón favorito -->
+            <!-- Compatibilidad -->
+            <div style="background:var(--csf2);border-radius:12px;padding:1rem;margin-bottom:1.25rem">
+                <p class="lyra-label mb-2">Compatible con</p>
+                <div style="display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.5rem">
+                    @foreach (var tipo in Model.TiposCuerpoCompatibles
+                        .Split(',').Select(t => t.Trim()).Where(t => !string.IsNullOrEmpty(t)))
+                    {
+                        <span class="pill pill-dark">@tipo</span>
+                    }
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:.4rem">
+                    @foreach (var tono in Model.TonosPielCompatibles
+                        .Split(',').Select(t => t.Trim()).Where(t => !string.IsNullOrEmpty(t)))
+                    {
+                        <span class="pill pill-cream">@tono</span>
+                    }
+                </div>
+            </div>
+
+            <!-- Favorito -->
             @if ((bool)ViewBag.EsFavorito)
             {
-                <form asp-action="QuitarFavorito" method="post">
-                    @Html.AntiForgeryToken()
-                    @* necesitamos el favoritoId — ver nota abajo *@
-                    <button class="btn-lyra-ghost w-100" style="border-color:#e84393;color:#e84393">
-                        ♥ Quitar de guardadas
-                    </button>
-                </form>
+                <p style="font-size:.82rem;color:var(--cp);margin-bottom:.75rem">♥ Ya guardaste esta prenda</p>
             }
             else
             {
-                <form asp-action="AgregarFavorito" method="post">
+                <form asp-action="AgregarFavorito" method="post" style="margin-bottom:.75rem">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="prendaId" value="@Model.Id" />
-                    <button class="btn-lyra w-100">♡ Guardar prenda</button>
+                    <button class="btn-lyra-ghost w-100">♡ Guardar prenda</button>
                 </form>
+            }
+
+            <!-- RESERVA -->
+            @if (Model.Stock > 0 && Model.Estado == EstadoPrenda.Disponible)
+            {
+                <div style="background:var(--grads);border:1.5px solid var(--cbr);
+                            border-radius:14px;padding:1.25rem;margin-top:.5rem">
+                    <p style="font-weight:600;color:var(--ctx);margin:0 0 .75rem;font-size:.95rem">
+                        🛍 Reservar esta prenda
+                    </p>
+                    <p style="font-size:.82rem;color:var(--ctx2);margin-bottom:1rem;line-height:1.6">
+                        Al reservar, la prenda quedará apartada para ti.
+                        La tienda te contactará para coordinar la entrega.
+                    </p>
+                    <form asp-action="ReservarPrenda" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="prendaId" value="@Model.Id" />
+
+                        <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem">
+                            <label style="display:flex;align-items:center;gap:.65rem;
+                                          cursor:pointer;font-size:.88rem;color:var(--ctx)">
+                                <input type="radio" name="esPresencial"
+                                       value="true" checked style="accent-color:var(--cp)" />
+                                🏪 Recoger en tienda (presencial)
+                            </label>
+                            <label style="display:flex;align-items:center;gap:.65rem;
+                                          cursor:pointer;font-size:.88rem;color:var(--ctx)">
+                                <input type="radio" name="esPresencial"
+                                       value="false" style="accent-color:var(--cp)" />
+                                📦 Me contactan para coordinar envío
+                            </label>
+                        </div>
+
+                        <button class="btn-lyra w-100" style="padding:.9rem">
+                            Reservar ahora →
+                        </button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div style="background:#fdf0ee;border:1.5px solid #fecaca;border-radius:12px;
+                            padding:1rem;text-align:center;margin-top:.5rem">
+                    <p style="color:#c0392b;font-weight:500;margin:0">
+                        Sin stock disponible
+                    </p>
+                    <p style="font-size:.8rem;color:#c0392b;margin:.3rem 0 0;opacity:.75">
+                        Guárdala en favoritos para cuando haya disponibilidad
+                    </p>
+                </div>
             }
         </div>
     </div>

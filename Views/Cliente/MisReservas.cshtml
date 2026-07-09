@@ -1,0 +1,112 @@
+@model List<Lyra.Models.Reserva>
+@using Lyra.Enums
+@{ ViewData["Title"] = "Mis Reservas"; }
+
+<div class="lyra-wrap">
+    <div class="page-header">
+        <div>
+            <h1 class="lyra-title" style="font-size:1.9rem">Mis reservas</h1>
+            <p style="color:var(--ctx2);margin:.3rem 0 0;font-size:.9rem">
+                @Model.Count(r => r.Estado == EstadoReserva.EnProceso) activas
+            </p>
+        </div>
+        <a asp-action="Recomendaciones" class="btn-lyra btn-lyra-sm">
+            ✨ Ver más prendas
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-3 py-2 px-3"
+             style="font-size:.9rem">✓ @TempData["Success"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">🛍</div>
+            <p class="empty-title">Sin reservas aún</p>
+            <p class="empty-sub">Reserva una prenda y aparecerá aquí.</p>
+            <a asp-action="Recomendaciones" class="btn-lyra mt-3">
+                ✨ Explorar prendas
+            </a>
+        </div>
+    }
+    else
+    {
+        @foreach (var r in Model.OrderByDescending(r => r.FechaReserva))
+        {
+            <div class="lyra-card">
+                <div style="display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap">
+
+                    <!-- Imagen -->
+                    <div style="width:80px;height:80px;border-radius:10px;overflow:hidden;
+                                background:var(--csf2);flex-shrink:0">
+                        @if (!string.IsNullOrEmpty(r.Prenda.ImagenUrl))
+                        {
+                            <img src="@r.Prenda.ImagenUrl"
+                                 style="width:100%;height:100%;object-fit:cover"
+                                 alt="@r.Prenda.Nombre" />
+                        }
+                        else
+                        {
+                            <div style="width:100%;height:100%;display:flex;
+                                        align-items:center;justify-content:center;font-size:2rem">
+                                👗
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Info -->
+                    <div style="flex:1;min-width:180px">
+                        <p style="font-family:'Playfair Display',serif;
+                                  font-size:1rem;color:var(--ctx);margin:0 0 .2rem">
+                            @r.Prenda.Nombre
+                        </p>
+                        <p style="font-size:.78rem;color:var(--ctx2);margin:0 0 .4rem">
+                            🏪 @r.Prenda.Tienda?.Nombre
+                            @if (!string.IsNullOrEmpty(r.Prenda.Tienda?.Ciudad))
+                            { <span>· @r.Prenda.Tienda.Ciudad</span> }
+                        </p>
+                        <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
+                            <span style="font-weight:600;color:var(--ctx);font-size:.95rem">
+                                S/ @r.Prenda.Precio.ToString("0.00")
+                            </span>
+                            <span class="pill pill-cream">@r.Prenda.Talla</span>
+
+                            @{
+                                var estadoPill = r.Estado switch {
+                                    EstadoReserva.EnProceso  => ("pill-yellow", "⏳ En proceso"),
+                                    EstadoReserva.Finalizada => ("pill-green",  "✓ Finalizada"),
+                                    _                        => ("pill-red",    "✕ Cancelada"),
+                                };
+                            }
+                            <span class="pill @estadoPill.Item1">@estadoPill.Item2</span>
+
+                            @if (r.EsPresencial)
+                            { <span class="pill pill-cream">🏪 Presencial</span> }
+                            else
+                            { <span class="pill pill-cream">📦 Contacto</span> }
+                        </div>
+                        <p style="font-size:.72rem;color:var(--ctx2);margin:.4rem 0 0">
+                            Reservada el @r.FechaReserva.ToString("dd/MM/yyyy 'a las' HH:mm")
+                        </p>
+                    </div>
+
+                    <!-- Acción -->
+                    @if (r.Estado == EstadoReserva.EnProceso)
+                    {
+                        <div>
+                            <form asp-action="CancelarReserva" method="post"
+                                  onsubmit="return confirm('¿Cancelar esta reserva?')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="reservaId" value="@r.Id" />
+                                <button class="btn-lyra-danger">Cancelar</button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>

@@ -39,5 +39,10 @@ namespace Lyra.Models
 
         // Navegación
         public ICollection<Favorito> Favoritos { get; set; } = new List<Favorito>();
+        [Range(0, 9999)]
+public int Stock { get; set; } = 0;
+
+// Navegación reservas
+public ICollection<Reserva> Reservas { get; set; } = new List<Reserva>();
     }
 }

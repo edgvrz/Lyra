@@ -14,6 +14,7 @@ obj/
 *.user
 *.suo
 
+app.db
 # Uploads temporales
 wwwroot/uploads/
 

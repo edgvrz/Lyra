@@ -1,0 +1,81 @@
+@page
+@model LoginModel
+@{ ViewData["Title"] = "Iniciar sesión"; Layout = "_Layout"; }
+
+<div class="auth-page">
+    <!-- Lado izquierdo — Branding -->
+    <div class="auth-left">
+        <div class="auth-left-logo">
+            <img src="~/img/precisa-logo.png" alt="PRECISA"
+                 onerror="this.style.display='none'" />
+        </div>
+        <h1 class="auth-left-title">PRECISA</h1>
+        <p class="auth-left-sub">Precisamente Bella</p>
+        <p class="auth-left-quote">
+            "Cada cuerpo es único. Descubre las prendas que fueron
+            hechas exactamente para ti."
+        </p>
+    </div>
+
+    <!-- Lado derecho — Formulario -->
+    <div class="auth-right">
+        <div class="auth-form-box">
+            <h2 class="auth-form-title">Bienvenida de vuelta</h2>
+            <p class="auth-form-sub">Ingresa tus datos para continuar</p>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger border-0 rounded-3 mb-3 py-2 px-3"
+                     style="font-size:.85rem">
+                    <div asp-validation-summary="ModelOnly"></div>
+                </div>
+            }
+
+            <form id="account" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label class="lyra-label">Correo electrónico</label>
+                    <input asp-for="Input.Email" class="auth-input"
+                           autocomplete="username" placeholder="tu@correo.com" />
+                    <span asp-validation-for="Input.Email"
+                          style="font-size:.78rem;color:#c0392b;margin-top:.3rem;display:block"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="lyra-label">Contraseña</label>
+                    <input asp-for="Input.Password" class="auth-input"
+                           type="password" autocomplete="current-password"
+                           placeholder="••••••••" />
+                    <span asp-validation-for="Input.Password"
+                          style="font-size:.78rem;color:#c0392b;margin-top:.3rem;display:block"></span>
+                </div>
+
+                <div style="display:flex;justify-content:space-between;
+                            align-items:center;margin-bottom:1.25rem">
+                    <label style="display:flex;align-items:center;gap:.5rem;
+                                  font-size:.85rem;color:var(--ctx2);cursor:pointer">
+                        <input asp-for="Input.RememberMe"
+                               style="accent-color:var(--cp);width:16px;height:16px" />
+                        Recordarme
+                    </label>
+                    <a asp-page="./ForgotPassword" class="auth-link">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </div>
+
+                <button type="submit" class="auth-btn">Ingresar →</button>
+
+                <div class="auth-divider"><span>¿Eres nueva?</span></div>
+
+                <div style="text-align:center">
+                    <a asp-page="./Register" class="auth-link">
+                        Crea tu cuenta gratis
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

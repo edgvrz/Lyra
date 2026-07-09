@@ -1,0 +1,138 @@
+@model List<Lyra.Models.Reserva>
+@using Lyra.Enums
+@{ ViewData["Title"] = "Mis Reservas"; }
+
+<div class="lyra-wrap">
+    <div class="page-header">
+        <div>
+            <h1 class="lyra-title" style="font-size:1.9rem">Reservas</h1>
+            <p style="color:var(--ctx2);margin:.3rem 0 0;font-size:.9rem">
+                @Model.Count(r => r.Estado == EstadoReserva.EnProceso) activas ·
+                @Model.Count total
+            </p>
+        </div>
+        <a asp-action="Dashboard" class="btn-lyra-ghost btn-lyra-sm">← Dashboard</a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-3 py-2 px-3"
+             style="font-size:.9rem">✓ @TempData["Success"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <p class="empty-title">Sin reservas aún</p>
+            <p class="empty-sub">Cuando las clientas reserven prendas aparecerán aquí.</p>
+        </div>
+    }
+    else
+    {
+        var activas     = Model.Where(r => r.Estado == EstadoReserva.EnProceso).ToList();
+        var finalizadas = Model.Where(r => r.Estado == EstadoReserva.Finalizada).ToList();
+        var canceladas  = Model.Where(r => r.Estado == EstadoReserva.Cancelada).ToList();
+
+        if (activas.Any())
+        {
+            <p class="lyra-label mb-2" style="color:var(--cp)">
+                ⏳ En proceso (@activas.Count)
+            </p>
+
+            @foreach (var r in activas)
+            {
+                <div class="lyra-card" style="border-color:var(--cbr)">
+                    <div style="display:flex;justify-content:space-between;
+                                align-items:flex-start;flex-wrap:wrap;gap:.75rem">
+                        <div style="flex:1;min-width:200px">
+                            <p style="font-family:'Playfair Display',serif;
+                                      font-size:1.05rem;color:var(--ctx);margin:0 0 .2rem">
+                                @r.Prenda.Nombre
+                            </p>
+                            <p style="font-size:.8rem;color:var(--ctx2);margin:0 0 .5rem">
+                                👤 @r.UsuarioPerfil.Nombre &nbsp;·&nbsp;
+                                📅 @r.FechaReserva.ToString("dd/MM/yyyy HH:mm") &nbsp;·&nbsp;
+                                @(r.EsPresencial ? "🏪 Presencial" : "📦 Envío/contacto")
+                            </p>
+                            <div style="display:flex;gap:.5rem;align-items:center">
+                                <span style="font-weight:600;color:var(--ctx)">
+                                    S/ @r.Prenda.Precio.ToString("0.00")
+                                </span>
+                                <span class="pill pill-yellow">En proceso</span>
+                                <span class="pill pill-cream">@r.Prenda.Talla</span>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+                            <form asp-action="GestionarReserva" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@r.Id" />
+                                <input type="hidden" name="nuevoEstado"
+                                       value="@EstadoReserva.Finalizada" />
+                                <button class="btn-lyra btn-lyra-sm">
+                                    ✓ Entregada
+                                </button>
+                            </form>
+                            <form asp-action="GestionarReserva" method="post"
+                                  onsubmit="return confirm('¿Cancelar esta reserva?')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@r.Id" />
+                                <input type="hidden" name="nuevoEstado"
+                                       value="@EstadoReserva.Cancelada" />
+                                <button class="btn-lyra-danger">✕ Cancelar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+
+        @if (finalizadas.Any())
+        {
+            <p class="lyra-label mb-2 mt-3" style="color:#2d7a4f">
+                ✓ Finalizadas (@finalizadas.Count)
+            </p>
+            @foreach (var r in finalizadas)
+            {
+                <div class="lyra-card" style="opacity:.7">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+                        <div>
+                            <p style="font-weight:500;color:var(--ctx);margin:0 0 .2rem">
+                                @r.Prenda.Nombre
+                            </p>
+                            <p style="font-size:.78rem;color:var(--ctx2);margin:0">
+                                👤 @r.UsuarioPerfil.Nombre ·
+                                @r.FechaActualizacion?.ToString("dd/MM/yyyy")
+                            </p>
+                        </div>
+                        <span class="pill pill-green">Finalizada</span>
+                    </div>
+                </div>
+            }
+        }
+
+        @if (canceladas.Any())
+        {
+            <p class="lyra-label mb-2 mt-3" style="color:#c0392b">
+                ✕ Canceladas (@canceladas.Count)
+            </p>
+            @foreach (var r in canceladas)
+            {
+                <div class="lyra-card" style="opacity:.5">
+                    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+                        <div>
+                            <p style="font-weight:500;color:var(--ctx);margin:0 0 .2rem">
+                                @r.Prenda.Nombre
+                            </p>
+                            <p style="font-size:.78rem;color:var(--ctx2);margin:0">
+                                👤 @r.UsuarioPerfil.Nombre ·
+                                @r.FechaReserva.ToString("dd/MM/yyyy")
+                            </p>
+                        </div>
+                        <span class="pill pill-red">Cancelada</span>
+                    </div>
+                </div>
+            }
+        }
+    }
+</div>

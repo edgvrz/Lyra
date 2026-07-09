@@ -3,122 +3,130 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] — AURA</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-
+    <title>@ViewData["Title"] — PRECISA</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/Lyra.styles.css" asp-append-version="true" />
+    <!-- Aplicar tema ANTES del render para evitar flash -->
+    <script>
+        (function(){
+            var t=localStorage.getItem('precisa-theme')||'plateado';
+            document.documentElement.setAttribute('data-theme',t);
+        })();
+    </script>
 </head>
 <body>
 
-<nav class="aura-nav">
-    <div class="aura-nav-inner">
+<nav class="precisa-nav">
+    <div class="precisa-nav-inner">
 
-        <!-- Logo + Nombre -->
-        <a asp-controller="Home" asp-action="Index" class="aura-brand">
-            <img src="~/img/aura-logo.png" alt="AURA" class="aura-logo-img"
+        <!-- Brand -->
+        <a asp-controller="Home" asp-action="Index" class="precisa-brand">
+            <img src="~/img/precisa-logo.png" alt="PRECISA"
+                 class="precisa-logo-img"
                  onerror="this.style.display='none'" />
-            <span class="aura-brand-name">AURA</span>
+            <div class="precisa-brand-text">
+                <span class="precisa-brand-name">PRECISA</span>
+                <span class="precisa-brand-sub">Precisamente Bella</span>
+            </div>
         </a>
 
-        <!-- Links por rol -->
-        <div class="aura-nav-links">
+        <!-- Nav links por rol -->
+        <div class="precisa-nav-links">
             @if (User.Identity?.IsAuthenticated == true)
             {
                 if (User.IsInRole("Admin"))
                 {
-                    <a asp-controller="Admin" asp-action="Dashboard"  class="aura-nav-link">Panel</a>
-                    <a asp-controller="Admin" asp-action="Usuarios"   class="aura-nav-link">Usuarias</a>
-                    <a asp-controller="Admin" asp-action="Tiendas"    class="aura-nav-link">Tiendas</a>
-                    <a asp-controller="Admin" asp-action="Prendas"    class="aura-nav-link">Catálogo</a>
+                    <a asp-controller="Admin" asp-action="Dashboard"  class="precisa-nav-link">Panel</a>
+                    <a asp-controller="Admin" asp-action="Usuarios"   class="precisa-nav-link">Usuarias</a>
+                    <a asp-controller="Admin" asp-action="Tiendas"    class="precisa-nav-link">Tiendas</a>
+                    <a asp-controller="Admin" asp-action="Prendas"    class="precisa-nav-link">Catálogo</a>
                 }
                 else if (User.IsInRole("Tienda"))
                 {
-                    <a asp-controller="Tienda" asp-action="Dashboard"   class="aura-nav-link">Mi tienda</a>
-                    <a asp-controller="Tienda" asp-action="MisPrendas"  class="aura-nav-link">Prendas</a>
-                    <a asp-controller="Tienda" asp-action="CrearPrenda" class="aura-nav-link">+ Publicar</a>
+                    <a asp-controller="Tienda" asp-action="Dashboard"   class="precisa-nav-link">Mi tienda</a>
+                    <a asp-controller="Tienda" asp-action="MisPrendas"  class="precisa-nav-link">Prendas</a>
+                    <a asp-controller="Tienda" asp-action="MisReservas" class="precisa-nav-link">📋 Reservas</a>
+                    <a asp-controller="Tienda" asp-action="CrearPrenda" class="precisa-nav-link">+ Publicar</a>
                 }
                 else if (User.IsInRole("Cliente"))
                 {
-                    <a asp-controller="Cliente" asp-action="Dashboard"       class="aura-nav-link">Inicio</a>
-                    <a asp-controller="Cliente" asp-action="Recomendaciones" class="aura-nav-link">✨ Para ti</a>
-                    <a asp-controller="Cliente" asp-action="Favoritos"       class="aura-nav-link">♥ Guardadas</a>
+                    <a asp-controller="Cliente" asp-action="Dashboard"       class="precisa-nav-link">Inicio</a>
+                    <a asp-controller="Cliente" asp-action="Recomendaciones" class="precisa-nav-link">✨ Para ti</a>
+                    <a asp-controller="Cliente" asp-action="Favoritos"       class="precisa-nav-link">♥ Guardadas</a>
+                    <a asp-controller="Cliente" asp-action="MisReservas"     class="precisa-nav-link">📋 Reservas</a>
                 }
             }
         </div>
 
-        <!-- Derecha: selector de tema + auth -->
-        <div class="aura-nav-right">
+        <!-- Derecha -->
+        <div class="precisa-nav-right">
 
             <!-- Theme picker -->
             <div class="theme-picker" id="themePicker">
-                <button class="theme-toggle-btn" id="themeToggleBtn" title="Cambiar tema de color">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+                <button class="theme-toggle-btn" id="themeToggleBtn" title="Cambiar tema">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                          stroke="currentColor" stroke-width="2" stroke-linecap="round">
                         <circle cx="12" cy="12" r="5"/>
                         <line x1="12" y1="1"  x2="12" y2="3"/>
                         <line x1="12" y1="21" x2="12" y2="23"/>
                         <line x1="4.22" y1="4.22"   x2="5.64"  y2="5.64"/>
                         <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                        <line x1="1"  y1="12" x2="3"  y2="12"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
                         <line x1="21" y1="12" x2="23" y2="12"/>
                         <line x1="4.22"  y1="19.78" x2="5.64"  y2="18.36"/>
                         <line x1="18.36" y1="5.64"  x2="19.78" y2="4.22"/>
                     </svg>
                 </button>
                 <div class="theme-dropdown" id="themeDropdown">
-                    <p class="theme-dd-title">Tema de color</p>
+                    <p class="theme-dd-title">Elige tu estilo</p>
                     <div class="theme-options">
                         <button class="theme-option" data-theme="plateado">
-                            <span class="theme-dot" style="background:linear-gradient(135deg,#64748b,#94a3b8)"></span>
+                            <span class="theme-dot"
+                                  style="background:linear-gradient(135deg,#4a6fa5,#7096c8)"></span>
                             Plateado
                         </button>
                         <button class="theme-option" data-theme="rojo">
-                            <span class="theme-dot" style="background:linear-gradient(135deg,#c0392b,#e74c3c)"></span>
+                            <span class="theme-dot"
+                                  style="background:linear-gradient(135deg,#8a1010,#d94040)"></span>
                             Rojo
                         </button>
                         <button class="theme-option" data-theme="cereza">
-                            <span class="theme-dot" style="background:linear-gradient(135deg,#8e1b4b,#c0395b)"></span>
+                            <span class="theme-dot"
+                                  style="background:linear-gradient(135deg,#620f33,#b83060)"></span>
                             Cereza
                         </button>
                         <button class="theme-option" data-theme="rosa">
-                            <span class="theme-dot" style="background:linear-gradient(135deg,#d6337a,#ec4899)"></span>
+                            <span class="theme-dot"
+                                  style="background:linear-gradient(135deg,#9a1450,#e04d88)"></span>
                             Rosa
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Auth -->
             @if (User.Identity?.IsAuthenticated == true)
             {
                 <form asp-area="Identity" asp-page="/Account/Logout"
                       asp-route-returnUrl="/" method="post" style="margin:0">
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="aura-logout-btn">Salir</button>
+                    <button type="submit" class="precisa-logout-btn">Salir</button>
                 </form>
             }
             else
             {
-                <a asp-area="Identity" asp-page="/Account/Login" class="aura-nav-link">
-                    Entrar
-                </a>
-                <a asp-area="Identity" asp-page="/Account/Register" class="aura-register-btn">
-                    Registrarse
-                </a>
+                <a asp-area="Identity" asp-page="/Account/Login"
+                   class="precisa-nav-link">Entrar</a>
+                <a asp-area="Identity" asp-page="/Account/Register"
+                   class="precisa-register-btn">Registrarse</a>
             }
         </div>
     </div>
 </nav>
 
-<!-- Mensajes globales -->
 @if (TempData["Error"] != null)
 {
-    <div class="aura-alert-global">
+    <div class="precisa-alert">
         <div class="lyra-wrap" style="padding-top:0;padding-bottom:0">
             ⚠ @TempData["Error"]
         </div>
@@ -127,67 +135,55 @@
 
 <main>@RenderBody()</main>
 
-<footer class="aura-footer">
-    <div class="aura-footer-inner">
-        <div class="aura-footer-brand">
-            <img src="~/img/aura-logo.png" alt="AURA"
-                 style="height:26px;opacity:.75;filter:grayscale(.2)"
+<footer class="precisa-footer">
+    <div class="precisa-footer-inner">
+        <div class="precisa-footer-brand">
+            <img src="~/img/precisa-logo.png" alt="PRECISA"
+                 style="height:24px;opacity:.7"
                  onerror="this.style.display='none'" />
-            AURA
+            PRECISA
         </div>
         <p style="font-size:.78rem;color:var(--ctx2)">
-            © @DateTime.Now.Year AURA — Moda inteligente para ti
+            © @DateTime.Now.Year PRECISA — Moda inteligente para ti
         </p>
-        <p style="font-size:.72rem;color:var(--ctx2);opacity:.5">
-            tus medidas exactas
+        <p style="font-size:.72rem;color:var(--ctx2);opacity:.5;
+                  font-family:'Playfair Display',serif;font-style:italic">
+            Precisamente Bella
         </p>
     </div>
 </footer>
 
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="~/js/site.js" asp-append-version="true"></script>
 
-<!-- ═══ SISTEMA DE TEMAS AURA ═══ -->
 <script>
-(function () {
-    // Aplicar tema guardado antes de renderizar para evitar flash
-    var saved = localStorage.getItem('aura-theme') || 'plateado';
-    document.documentElement.setAttribute('data-theme', saved);
+(function(){
+    var saved = localStorage.getItem('precisa-theme') || 'plateado';
 
-    function applyTheme(t) {
+    function applyTheme(t){
         document.documentElement.setAttribute('data-theme', t);
-        localStorage.setItem('aura-theme', t);
-        document.querySelectorAll('.theme-option').forEach(function (b) {
+        localStorage.setItem('precisa-theme', t);
+        document.querySelectorAll('.theme-option').forEach(function(b){
             b.classList.toggle('active', b.dataset.theme === t);
         });
     }
-
-    // Marcar activo al cargar
     applyTheme(saved);
 
-    // Abrir/cerrar dropdown
-    var toggleBtn = document.getElementById('themeToggleBtn');
-    var dropdown  = document.getElementById('themeDropdown');
+    var toggleBtn  = document.getElementById('themeToggleBtn');
+    var dropdown   = document.getElementById('themeDropdown');
 
-    toggleBtn.addEventListener('click', function (e) {
+    toggleBtn.addEventListener('click', function(e){
         e.stopPropagation();
         dropdown.classList.toggle('open');
     });
-
-    // Seleccionar tema
-    document.querySelectorAll('.theme-option').forEach(function (btn) {
-        btn.addEventListener('click', function () {
+    document.querySelectorAll('.theme-option').forEach(function(btn){
+        btn.addEventListener('click', function(){
             applyTheme(btn.dataset.theme);
             dropdown.classList.remove('open');
         });
     });
-
-    // Cerrar al hacer clic fuera
-    document.addEventListener('click', function (e) {
-        if (!e.target.closest('#themePicker')) {
-            dropdown.classList.remove('open');
-        }
+    document.addEventListener('click', function(e){
+        if(!e.target.closest('#themePicker')) dropdown.classList.remove('open');
     });
 })();
 </script>

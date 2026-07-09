@@ -14,6 +14,8 @@ namespace Lyra.Data
         public DbSet<Tienda>             Tiendas             { get; set; }
         public DbSet<Prenda>             Prendas             { get; set; }
         public DbSet<Favorito>           Favoritos           { get; set; }
+        // Junto a los otros DbSet
+public DbSet<Reserva> Reservas { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -38,6 +40,9 @@ namespace Lyra.Data
             builder.Entity<Prenda>()
                 .Property(p => p.Precio)
                 .HasColumnType("decimal(10,2)");
+                // Reservas: índice compuesto para búsquedas rápidas
+builder.Entity<Reserva>()
+    .HasIndex(r => new { r.UsuarioPerfilId, r.PrendaId });
         }
     }
 }

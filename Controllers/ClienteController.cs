@@ -280,5 +280,115 @@ public async Task<IActionResult> Recomendaciones(
             }
             return RedirectToAction("Favoritos");
         }
+        // ═══════════════════════════════════════════
+//  RESERVAR PRENDA
+// ═══════════════════════════════════════════
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> ReservarPrenda(int prendaId, bool esPresencial)
+{
+    var user   = await _userManager.GetUserAsync(User);
+    var perfil = await _context.UsuariosPerfil
+        .FirstOrDefaultAsync(p => p.UserId == user!.Id);
+
+    if (perfil == null) return RedirectToAction("CompletarPerfil");
+
+    // ¿Ya tiene reserva activa para esta prenda?
+    var yaReservada = await _context.Reservas
+        .AnyAsync(r => r.UsuarioPerfilId == perfil.Id &&
+                       r.PrendaId        == prendaId  &&
+                       r.Estado          == EstadoReserva.EnProceso);
+
+    if (yaReservada)
+    {
+        TempData["Error"] = "Ya tienes una reserva activa para esta prenda.";
+        return RedirectToAction("DetallePrenda", new { id = prendaId });
+    }
+
+    var prenda = await _context.Prendas.FindAsync(prendaId);
+
+    if (prenda == null || prenda.Stock <= 0)
+    {
+        TempData["Error"] = "Sin stock disponible en este momento.";
+        return RedirectToAction("DetallePrenda", new { id = prendaId });
+    }
+
+    // Crear reserva
+    _context.Reservas.Add(new Reserva
+    {
+        PrendaId        = prendaId,
+        UsuarioPerfilId = perfil.Id,
+        Estado          = EstadoReserva.EnProceso,
+        EsPresencial    = esPresencial,
+        FechaReserva    = DateTime.UtcNow
+    });
+
+    // Descontar stock
+    prenda.Stock--;
+    if (prenda.Stock == 0)
+        prenda.Estado = EstadoPrenda.Agotado;
+
+    await _context.SaveChangesAsync();
+    TempData["Success"] = "¡Reserva creada! La tienda se pondrá en contacto contigo.";
+    return RedirectToAction("MisReservas");
+}
+
+// ═══════════════════════════════════════════
+//  MIS RESERVAS (cliente)
+// ═══════════════════════════════════════════
+public async Task<IActionResult> MisReservas()
+{
+    var user   = await _userManager.GetUserAsync(User);
+    var perfil = await _context.UsuariosPerfil
+        .FirstOrDefaultAsync(p => p.UserId == user!.Id);
+
+    if (perfil == null) return RedirectToAction("CompletarPerfil");
+
+    var reservas = await _context.Reservas
+        .Include(r => r.Prenda)
+            .ThenInclude(p => p.Tienda)
+        .Where(r => r.UsuarioPerfilId == perfil.Id)
+        .OrderByDescending(r => r.FechaReserva)
+        .ToListAsync();
+
+    return View(reservas);
+}
+
+// ═══════════════════════════════════════════
+//  CANCELAR RESERVA (cliente)
+// ═══════════════════════════════════════════
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> CancelarReserva(int reservaId)
+{
+    var user   = await _userManager.GetUserAsync(User);
+    var perfil = await _context.UsuariosPerfil
+        .FirstOrDefaultAsync(p => p.UserId == user!.Id);
+
+    if (perfil == null) return RedirectToAction("CompletarPerfil");
+
+    var reserva = await _context.Reservas
+        .Include(r => r.Prenda)
+        .FirstOrDefaultAsync(r => r.Id == reservaId &&
+                                   r.UsuarioPerfilId == perfil.Id);
+
+    if (reserva == null) return NotFound();
+
+    if (reserva.Estado == EstadoReserva.EnProceso)
+    {
+        reserva.Estado              = EstadoReserva.Cancelada;
+        reserva.FechaActualizacion  = DateTime.UtcNow;
+
+        // Devolver stock
+        reserva.Prenda.Stock++;
+        if (reserva.Prenda.Estado == EstadoPrenda.Agotado)
+            reserva.Prenda.Estado = EstadoPrenda.Disponible;
+
+        await _context.SaveChangesAsync();
+        TempData["Success"] = "Reserva cancelada. El stock fue devuelto.";
+    }
+
+    return RedirectToAction("MisReservas");
+}
     }
 }

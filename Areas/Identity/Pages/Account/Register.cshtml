@@ -1,67 +1,93 @@
 ﻿@page
 @model RegisterModel
-@{
-    ViewData["Title"] = "Register";
-}
+@{ ViewData["Title"] = "Crear cuenta"; Layout = "_Layout"; }
 
-<h1>@ViewData["Title"]</h1>
-
-<div class="row">
-    <div class="col-md-4">
-        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h2>Create a new account.</h2>
-            <hr />
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                <label asp-for="Input.Email">Email</label>
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
+<div class="auth-page">
+    <!-- Lado izquierdo -->
+    <div class="auth-left">
+        <div class="auth-left-logo">
+            <img src="~/img/precisa-logo.png" alt="PRECISA"
+                 onerror="this.style.display='none'" />
+        </div>
+        <h1 class="auth-left-title">PRECISA</h1>
+        <p class="auth-left-sub">Precisamente Bella</p>
+        <p class="auth-left-quote">
+            "Descubre tu tipo de cuerpo, conoce tus colores y
+            encuentra las prendas que te hacen brillar."
+        </p>
+        <div style="margin-top:2rem;text-align:left;width:100%;max-width:280px">
+            <p style="font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+                      color:rgba(255,255,255,.5);margin-bottom:.75rem">¿Tipo de cuenta?</p>
+            <div style="display:flex;flex-direction:column;gap:.5rem">
+                <div style="background:rgba(255,255,255,.1);border-radius:10px;
+                            padding:.65rem 1rem;font-size:.82rem;color:rgba(255,255,255,.85)">
+                    👗 <strong>Clienta</strong> — cualquier correo
+                </div>
+                <div style="background:rgba(255,255,255,.1);border-radius:10px;
+                            padding:.65rem 1rem;font-size:.82rem;color:rgba(255,255,255,.85)">
+                    🏪 <strong>Tienda</strong> — correo <em>@("tienda.com")</em>
+                </div>
+                <div style="background:rgba(255,255,255,.1);border-radius:10px;
+                            padding:.65rem 1rem;font-size:.82rem;color:rgba(255,255,255,.85)">
+                    ⚙ <strong>Admin</strong> — correo <em>@("admin.com")</em>
+                </div>
             </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.Password">Password</label>
-                <span asp-validation-for="Input.Password" class="text-danger"></span>
-            </div>
-            <div class="form-floating mb-3">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
-                <label asp-for="Input.ConfirmPassword">Confirm Password</label>
-                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-            </div>
-            <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
-        </form>
+        </div>
     </div>
-    <div class="col-md-6 col-md-offset-2">
-        <section>
-            <h3>Use another service to register.</h3>
-            <hr />
-            @{
-                if ((Model.ExternalLogins?.Count ?? 0) == 0)
-                {
-                    <div>
-                        <p>
-                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
-                            about setting up this ASP.NET application to support logging in via external services</a>.
-                        </p>
-                    </div>
-                }
-                else
-                {
-                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                        <div>
-                            <p>
-                                @foreach (var provider in Model.ExternalLogins!)
-                                {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
-                                }
-                            </p>
-                        </div>
-                    </form>
-                }
+
+    <!-- Lado derecho -->
+    <div class="auth-right">
+        <div class="auth-form-box">
+            <h2 class="auth-form-title">Crear mi cuenta</h2>
+            <p class="auth-form-sub">Únete a PRECISA y descubre tu estilo</p>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger border-0 rounded-3 mb-3 py-2 px-3"
+                     style="font-size:.85rem">
+                    <div asp-validation-summary="ModelOnly"></div>
+                </div>
             }
-        </section>
+
+            <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label class="lyra-label">Correo electrónico</label>
+                    <input asp-for="Input.Email" class="auth-input"
+                           autocomplete="username" placeholder="tu@correo.com" />
+                    <span asp-validation-for="Input.Email"
+                          style="font-size:.78rem;color:#c0392b;margin-top:.3rem;display:block"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="lyra-label">Contraseña</label>
+                    <input asp-for="Input.Password" class="auth-input"
+                           type="password" autocomplete="new-password"
+                           placeholder="Mínimo 6 caracteres" />
+                    <span asp-validation-for="Input.Password"
+                          style="font-size:.78rem;color:#c0392b;margin-top:.3rem;display:block"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label class="lyra-label">Confirmar contraseña</label>
+                    <input asp-for="Input.ConfirmPassword" class="auth-input"
+                           type="password" autocomplete="new-password"
+                           placeholder="Repite tu contraseña" />
+                    <span asp-validation-for="Input.ConfirmPassword"
+                          style="font-size:.78rem;color:#c0392b;margin-top:.3rem;display:block"></span>
+                </div>
+
+                <button type="submit" class="auth-btn">Crear mi cuenta →</button>
+
+                <div class="auth-divider"><span>¿Ya tienes cuenta?</span></div>
+
+                <div style="text-align:center">
+                    <a asp-page="./Login" class="auth-link">Iniciar sesión</a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }
