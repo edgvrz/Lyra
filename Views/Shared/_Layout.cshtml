@@ -55,13 +55,46 @@
                     <a asp-controller="Cliente" asp-action="Recomendaciones" class="precisa-nav-link">✨ Para ti</a>
                     <a asp-controller="Cliente" asp-action="Favoritos"       class="precisa-nav-link">♥ Guardadas</a>
                     <a asp-controller="Cliente" asp-action="MisReservas"     class="precisa-nav-link">📋 Reservas</a>
+                    <a asp-controller="Carrito" asp-action="MisPedidos"      class="precisa-nav-link">📦 Pedidos</a>
                 }
             }
         </div>
 
         <!-- Derecha -->
         <div class="precisa-nav-right">
-
+            @if (User.IsInRole("Cliente"))
+{
+    <a asp-controller="Carrito" asp-action="Index"
+       style="position:relative;text-decoration:none;
+              display:flex;align-items:center;justify-content:center;
+              width:38px;height:38px;border-radius:50%;
+              border:1.5px solid var(--cbr);background:var(--csf);
+              color:var(--ctx);transition:all .2s;
+              box-shadow:0 2px 8px var(--csh);"
+       title="Mi carrito">
+        🛒
+        @{
+            var carritoCount = 0;
+            try {
+                var carritoSvc = Context.RequestServices
+                    .GetService<Lyra.Services.CarritoService>();
+                if (carritoSvc != null)
+                    carritoCount = carritoSvc.ContarItems();
+            } catch { }
+        }
+        @if (carritoCount > 0)
+        {
+            <span style="position:absolute;top:-4px;right:-4px;
+                          width:18px;height:18px;border-radius:50%;
+                          background:var(--grad);color:#fff;
+                          font-size:.62rem;font-weight:700;
+                          display:flex;align-items:center;justify-content:center;
+                          border:2px solid var(--csf)">
+                @carritoCount
+            </span>
+        }
+    </a>
+}
             <!-- Theme picker -->
             <div class="theme-picker" id="themePicker">
                 <button class="theme-toggle-btn" id="themeToggleBtn" title="Cambiar tema">

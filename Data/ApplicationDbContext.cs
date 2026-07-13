@@ -14,6 +14,8 @@ namespace Lyra.Data
         public DbSet<Tienda>             Tiendas             { get; set; }
         public DbSet<Prenda>             Prendas             { get; set; }
         public DbSet<Favorito>           Favoritos           { get; set; }
+        public DbSet<Pedido>     Pedidos     { get; set; }
+        public DbSet<PedidoItem> PedidoItems { get; set; }
         // Junto a los otros DbSet
 public DbSet<Reserva> Reservas { get; set; }
 

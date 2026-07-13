@@ -1,0 +1,92 @@
+@model List<Lyra.Models.Pedido>
+@using Lyra.Enums
+@{ ViewData["Title"] = "Mis Pedidos"; }
+
+<div class="lyra-wrap">
+    <div class="page-header">
+        <div>
+            <h1 class="lyra-title" style="font-size:1.9rem">Mis pedidos</h1>
+            <p style="color:var(--ctx2);margin:.3rem 0 0;font-size:.9rem">
+                @Model.Count pedido@(Model.Count != 1 ? "s" : "") en total
+            </p>
+        </div>
+        <a asp-controller="Cliente" asp-action="Recomendaciones"
+           class="btn-lyra btn-lyra-sm">✨ Seguir comprando</a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">📦</div>
+            <p class="empty-title">Sin pedidos aún</p>
+            <p class="empty-sub">Tus pedidos confirmados aparecerán aquí</p>
+            <a asp-controller="Cliente" asp-action="Recomendaciones"
+               class="btn-lyra mt-3">✨ Ver recomendaciones</a>
+        </div>
+    }
+    else
+    {
+        @foreach (var pedido in Model)
+        {
+            var (pill, label) = pedido.Estado switch
+            {
+                EstadoPedido.Confirmado  => ("pill-yellow", "✓ Confirmado"),
+                EstadoPedido.Preparando  => ("pill-yellow", "⚙ Preparando"),
+                EstadoPedido.Listo       => ("pill-green",  "✅ Listo para recoger"),
+                EstadoPedido.Entregado   => ("pill-green",  "📦 Entregado"),
+                EstadoPedido.Cancelado   => ("pill-red",    "✕ Cancelado"),
+                _                        => ("pill-cream",  pedido.Estado.ToString())
+            };
+
+            <div class="lyra-card">
+                <div style="display:flex;justify-content:space-between;
+                            align-items:flex-start;flex-wrap:wrap;
+                            gap:.75rem;margin-bottom:1rem">
+                    <div>
+                        <p style="font-family:'Playfair Display',serif;
+                                  font-size:1.1rem;font-weight:700;
+                                  color:var(--ctx);margin:0 0 .2rem">
+                            @pedido.NumeroPedido
+                        </p>
+                        <p style="font-size:.78rem;color:var(--ctx2);margin:0">
+                            📅 @pedido.FechaPedido.ToString("dd/MM/yyyy HH:mm") ·
+                            💳 @pedido.MetodoPago
+                        </p>
+                    </div>
+                    <div style="display:flex;gap:.5rem;align-items:center">
+                        <span class="pill @pill">@label</span>
+                        <span style="font-family:'Playfair Display',serif;
+                                     font-size:1.15rem;font-weight:700;color:var(--cp)">
+                            S/ @pedido.Total.ToString("0.00")
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Items del pedido -->
+                <div style="background:var(--csf2);border-radius:12px;padding:.85rem 1rem">
+                    @foreach (var item in pedido.Items)
+                    {
+                        <div style="display:flex;justify-content:space-between;
+                                    align-items:center;padding:.35rem 0;
+                                    border-bottom:1px solid var(--cbr)">
+                            <div>
+                                <span style="font-size:.88rem;font-weight:500;
+                                             color:var(--ctx)">@item.NombrePrenda</span>
+                                <span style="font-size:.76rem;color:var(--ctx2)">
+                                    · ×@item.Cantidad
+                                    @if (!string.IsNullOrEmpty(item.Talla))
+                                    { <span>· @item.Talla</span> }
+                                    @if (!string.IsNullOrEmpty(item.TiendaNombre))
+                                    { <span>· @item.TiendaNombre</span> }
+                                </span>
+                            </div>
+                            <span style="font-size:.88rem;font-weight:600;color:var(--ctx)">
+                                S/ @item.Subtotal.ToString("0.00")
+                            </span>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>

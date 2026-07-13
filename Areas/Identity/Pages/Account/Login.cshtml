@@ -1,32 +1,241 @@
 @page
 @model LoginModel
-@{ ViewData["Title"] = "Iniciar sesión"; Layout = "_Layout"; }
+@{
+    ViewData["Title"] = "Iniciar sesión";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
 
-<div class="auth-page">
-    <!-- Lado izquierdo — Branding -->
-    <div class="auth-left">
-        <div class="auth-left-logo">
-            <img src="~/img/precisa-logo.png" alt="PRECISA"
-                 onerror="this.style.display='none'" />
+<style>
+.auth-wrap {
+    min-height: calc(100vh - 68px);
+    display: flex;
+    background: var(--cbg);
+}
+.auth-panel-left {
+    flex: 0 0 44%;
+    background: var(--herograd);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3.5rem 3rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+/* Círculos decorativos */
+.auth-deco-1 {
+    position: absolute;
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,.1);
+    top: -80px; left: -80px;
+}
+.auth-deco-2 {
+    position: absolute;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,.1);
+    bottom: -60px; right: -60px;
+}
+.auth-deco-3 {
+    position: absolute;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.05);
+    bottom: 120px; left: 40px;
+}
+.auth-logo-bubble {
+    width: 190px; height: 190px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.14);
+    backdrop-filter: blur(12px);
+    border: 2px solid rgba(255,255,255,.25);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,.2), 0 0 0 8px rgba(255,255,255,.04);
+    position: relative; z-index: 1;
+    transition: transform .3s;
+}
+.auth-logo-bubble:hover { transform: scale(1.04); }
+.auth-logo-bubble img { width: 85%; height: 85%; object-fit: contain; }
+.auth-app-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.6rem; font-weight: 700;
+    color: #fff; letter-spacing: .08em;
+    margin-bottom: .2rem;
+    position: relative; z-index: 1;
+    text-shadow: 0 2px 20px rgba(0,0,0,.2);
+}
+.auth-app-tagline {
+    font-size: .72rem; letter-spacing: .22em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.55);
+    margin-bottom: 2.5rem;
+    position: relative; z-index: 1;
+}
+.auth-quote {
+    font-family: 'Playfair Display', serif;
+    font-style: italic; font-size: 1rem;
+    color: rgba(255,255,255,.82);
+    line-height: 1.75; max-width: 280px;
+    padding: 1rem 1.25rem;
+    background: rgba(255,255,255,.08);
+    border-radius: 14px;
+    border-left: 3px solid rgba(255,255,255,.3);
+    text-align: left;
+    position: relative; z-index: 1;
+}
+.auth-panel-right {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 3rem 2.5rem;
+    background: var(--csf);
+}
+.auth-form-card {
+    width: 100%; max-width: 400px;
+}
+.auth-form-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; color: var(--ctx);
+    margin-bottom: .3rem;
+}
+.auth-form-sub {
+    font-size: .9rem; color: var(--ctx2); margin-bottom: 2rem;
+}
+.auth-field { position: relative; margin-bottom: 1.1rem; }
+.auth-field-icon {
+    position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--ctx2); font-size: 1rem;
+    pointer-events: none;
+    transition: color .2s;
+}
+.auth-field:focus-within .auth-field-icon { color: var(--cp); }
+.auth-field-input {
+    width: 100%;
+    border: 1.5px solid var(--cbr);
+    border-radius: 12px;
+    padding: .82rem 1rem .82rem 2.75rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .95rem; color: var(--ctx);
+    background: var(--csf); outline: none;
+    transition: border-color .2s, box-shadow .2s, background .3s;
+}
+.auth-field-input:focus {
+    border-color: var(--cp);
+    box-shadow: 0 0 0 3px var(--cpacc);
+    background: var(--csf2);
+}
+.auth-field-label {
+    font-size: .73rem; font-weight: 600;
+    letter-spacing: .07em; text-transform: uppercase;
+    color: var(--ctx2); margin-bottom: .4rem; display: block;
+}
+.auth-submit-btn {
+    width: 100%;
+    background: var(--grad); color: #fff;
+    border: none; border-radius: 12px;
+    padding: .9rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem; font-weight: 600;
+    cursor: pointer; transition: all .22s;
+    box-shadow: 0 6px 22px var(--csh2);
+    margin-top: .5rem;
+    letter-spacing: .02em;
+}
+.auth-submit-btn:hover {
+    opacity: .88; transform: translateY(-2px);
+    box-shadow: 0 10px 30px var(--csh2);
+}
+.auth-divider {
+    display: flex; align-items: center; gap: .75rem;
+    margin: 1.5rem 0;
+}
+.auth-divider::before, .auth-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--cbr);
+}
+.auth-divider span { font-size: .78rem; color: var(--ctx2); white-space: nowrap; }
+.auth-alt-link {
+    display: block; text-align: center;
+    color: var(--cp); font-size: .9rem; font-weight: 600;
+    padding: .7rem; border-radius: 10px;
+    border: 1.5px solid var(--cbr);
+    transition: all .2s; text-decoration: none;
+}
+.auth-alt-link:hover {
+    background: var(--cpacc); border-color: var(--cp);
+    color: var(--cp3);
+}
+.auth-val-error {
+    font-size: .76rem; color: #c0392b;
+    margin-top: .3rem; display: block;
+}
+@@media (max-width: 768px) {
+    .auth-panel-left { display: none; }
+    .auth-panel-right { padding: 2rem 1.25rem; }
+}
+</style>
+
+<div class="auth-wrap">
+
+    <!-- Panel izquierdo -->
+    <div class="auth-panel-left">
+        <div class="auth-deco-1"></div>
+        <div class="auth-deco-2"></div>
+        <div class="auth-deco-3"></div>
+
+        <div class="auth-logo-bubble">
+            <img src="/img/precisa-logo.png" alt="PRECISA"
+                 onerror="this.parentElement.innerHTML='✨'" />
         </div>
-        <h1 class="auth-left-title">PRECISA</h1>
-        <p class="auth-left-sub">Precisamente Bella</p>
-        <p class="auth-left-quote">
-            "Cada cuerpo es único. Descubre las prendas que fueron
-            hechas exactamente para ti."
-        </p>
+
+        <h1 class="auth-app-name">PRECISA</h1>
+        <p class="auth-app-tagline">Precisamente Bella</p>
+
+        <div class="auth-quote">
+            "Cada cuerpo es único y perfecto.<br>
+            Descubre las prendas que fueron hechas
+            exactamente para ti."
+        </div>
+
+        <!-- Stats decorativos -->
+        <div style="display:flex;gap:2rem;margin-top:2.5rem;position:relative;z-index:1">
+            <div style="text-align:center">
+                <p style="font-family:'Playfair Display',serif;font-size:1.6rem;
+                           color:#fff;font-weight:700;margin:0;line-height:1">5+</p>
+                <p style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;
+                           color:rgba(255,255,255,.5);margin:.3rem 0 0">Tipos de cuerpo</p>
+            </div>
+            <div style="width:1px;background:rgba(255,255,255,.15)"></div>
+            <div style="text-align:center">
+                <p style="font-family:'Playfair Display',serif;font-size:1.6rem;
+                           color:#fff;font-weight:700;margin:0;line-height:1">6</p>
+                <p style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;
+                           color:rgba(255,255,255,.5);margin:.3rem 0 0">Tonos de piel</p>
+            </div>
+            <div style="width:1px;background:rgba(255,255,255,.15)"></div>
+            <div style="text-align:center">
+                <p style="font-family:'Playfair Display',serif;font-size:1.6rem;
+                           color:#fff;font-weight:700;margin:0;line-height:1">100%</p>
+                <p style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;
+                           color:rgba(255,255,255,.5);margin:.3rem 0 0">Para ti</p>
+            </div>
+        </div>
     </div>
 
-    <!-- Lado derecho — Formulario -->
-    <div class="auth-right">
-        <div class="auth-form-box">
-            <h2 class="auth-form-title">Bienvenida de vuelta</h2>
+    <!-- Panel derecho -->
+    <div class="auth-panel-right">
+        <div class="auth-form-card">
+
+            <h2 class="auth-form-title">Bienvenida 👋</h2>
             <p class="auth-form-sub">Ingresa tus datos para continuar</p>
 
             @if (!ViewData.ModelState.IsValid)
             {
-                <div class="alert alert-danger border-0 rounded-3 mb-3 py-2 px-3"
-                     style="font-size:.85rem">
+                <div style="background:#fdf0ee;border:1.5px solid #fecaca;border-radius:12px;
+                            padding:.85rem 1rem;margin-bottom:1.25rem;font-size:.85rem;color:#c0392b">
                     <div asp-validation-summary="ModelOnly"></div>
                 </div>
             }
@@ -34,46 +243,57 @@
             <form id="account" method="post">
                 @Html.AntiForgeryToken()
 
-                <div class="mb-3">
-                    <label class="lyra-label">Correo electrónico</label>
-                    <input asp-for="Input.Email" class="auth-input"
-                           autocomplete="username" placeholder="tu@correo.com" />
+                <div class="auth-field">
+                    <label class="auth-field-label">Correo electrónico</label>
+                    <span class="auth-field-icon">✉</span>
+                    <input asp-for="Input.Email"
+                           class="auth-field-input"
+                           autocomplete="username"
+                           placeholder="tu@correo.com" />
                     <span asp-validation-for="Input.Email"
-                          style="font-size:.78rem;color:#c0392b;margin-top:.3rem;display:block"></span>
+                          class="auth-val-error"></span>
                 </div>
 
-                <div class="mb-3">
-                    <label class="lyra-label">Contraseña</label>
-                    <input asp-for="Input.Password" class="auth-input"
-                           type="password" autocomplete="current-password"
+                <div class="auth-field">
+                    <label class="auth-field-label">Contraseña</label>
+                    <span class="auth-field-icon">🔒</span>
+                    <input asp-for="Input.Password"
+                           class="auth-field-input"
+                           type="password"
+                           autocomplete="current-password"
                            placeholder="••••••••" />
                     <span asp-validation-for="Input.Password"
-                          style="font-size:.78rem;color:#c0392b;margin-top:.3rem;display:block"></span>
+                          class="auth-val-error"></span>
                 </div>
 
                 <div style="display:flex;justify-content:space-between;
-                            align-items:center;margin-bottom:1.25rem">
+                            align-items:center;margin-bottom:1.5rem">
                     <label style="display:flex;align-items:center;gap:.5rem;
                                   font-size:.85rem;color:var(--ctx2);cursor:pointer">
                         <input asp-for="Input.RememberMe"
-                               style="accent-color:var(--cp);width:16px;height:16px" />
+                               style="width:16px;height:16px;accent-color:var(--cp)" />
                         Recordarme
                     </label>
-                    <a asp-page="./ForgotPassword" class="auth-link">
+                    <a asp-page="./ForgotPassword"
+                       style="font-size:.83rem;color:var(--cp);font-weight:500;
+                              text-decoration:none">
                         ¿Olvidaste tu contraseña?
                     </a>
                 </div>
 
-                <button type="submit" class="auth-btn">Ingresar →</button>
+                <button type="submit" class="auth-submit-btn">
+                    Ingresar →
+                </button>
 
-                <div class="auth-divider"><span>¿Eres nueva?</span></div>
-
-                <div style="text-align:center">
-                    <a asp-page="./Register" class="auth-link">
-                        Crea tu cuenta gratis
-                    </a>
+                <div class="auth-divider">
+                    <span>¿Eres nueva en PRECISA?</span>
                 </div>
+
+                <a asp-page="./Register" class="auth-alt-link">
+                    Crear mi cuenta gratis ✨
+                </a>
             </form>
+
         </div>
     </div>
 </div>

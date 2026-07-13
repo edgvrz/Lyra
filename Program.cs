@@ -38,7 +38,16 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(o =>
 {
     o.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10 MB
 });
-
+// Sesión para el carrito
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout    = TimeSpan.FromMinutes(60);
+    options.Cookie.HttpOnly  = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.Name    = "precisa_session";
+});
+builder.Services.AddScoped<CarritoService>();
 var app = builder.Build();
 
 
@@ -78,6 +87,7 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseAuthentication();
+app.UseSession();
 app.UseAuthorization();
 
 app.MapStaticAssets();

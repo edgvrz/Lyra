@@ -1,0 +1,171 @@
+@model List<Lyra.Models.CarritoItem>
+@{ ViewData["Title"] = "Mi Carrito"; }
+
+<div class="lyra-wrap">
+    <div class="page-header">
+        <div>
+            <h1 class="lyra-title" style="font-size:1.9rem">🛒 Mi carrito</h1>
+            <p style="color:var(--ctx2);margin:.3rem 0 0;font-size:.9rem">
+                @Model.Count prenda@(Model.Count != 1 ? "s" : "") seleccionada@(Model.Count != 1 ? "s" : "")
+            </p>
+        </div>
+        <a asp-controller="Cliente" asp-action="Recomendaciones"
+           class="btn-lyra-ghost btn-lyra-sm">← Seguir comprando</a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 rounded-3 mb-3 py-2 px-3"
+             style="font-size:.9rem">✓ @TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger border-0 rounded-3 mb-3 py-2 px-3"
+             style="font-size:.9rem">⚠ @TempData["Error"]</div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-icon">🛒</div>
+            <p class="empty-title">Tu carrito está vacío</p>
+            <p class="empty-sub">Agrega prendas de tus recomendaciones</p>
+            <a asp-controller="Cliente" asp-action="Recomendaciones"
+               class="btn-lyra mt-3">✨ Ver recomendaciones</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <!-- Items -->
+            <div class="col-lg-8">
+                @foreach (var item in Model)
+                {
+                    <div class="lyra-card" style="padding:1.25rem">
+                        <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+
+                            <!-- Imagen -->
+                            <div style="width:88px;height:88px;border-radius:12px;
+                                        overflow:hidden;background:var(--csf2);flex-shrink:0">
+                                @if (!string.IsNullOrEmpty(item.ImagenUrl))
+                                {
+                                    <img src="@item.ImagenUrl"
+                                         style="width:100%;height:100%;object-fit:cover"
+                                         alt="@item.Nombre" />
+                                }
+                                else
+                                {
+                                    <div style="width:100%;height:100%;display:flex;
+                                                align-items:center;justify-content:center;
+                                                font-size:2rem">👗</div>
+                                }
+                            </div>
+
+                            <!-- Info -->
+                            <div style="flex:1;min-width:160px">
+                                <p style="font-family:'Playfair Display',serif;
+                                          font-size:1rem;color:var(--ctx);
+                                          margin:0 0 .2rem;font-weight:600">
+                                    @item.Nombre
+                                </p>
+                                <p style="font-size:.78rem;color:var(--ctx2);margin:0 0 .5rem">
+                                    🏪 @(item.TiendaNombre ?? "—")
+                                    @if (!string.IsNullOrEmpty(item.Talla))
+                                    { <span class="pill pill-cream ms-1">@item.Talla</span> }
+                                </p>
+                                <p style="font-weight:600;color:var(--cp);margin:0;font-size:.95rem">
+                                    S/ @item.Precio.ToString("0.00") c/u
+                                </p>
+                            </div>
+
+                            <!-- Cantidad -->
+                            <div style="display:flex;align-items:center;gap:.5rem">
+                                <form asp-action="ActualizarCantidad" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="prendaId" value="@item.PrendaId" />
+                                    <input type="hidden" name="cantidad" value="@(item.Cantidad - 1)" />
+                                    <button style="width:32px;height:32px;border-radius:8px;
+                                                   border:1.5px solid var(--cbr);
+                                                   background:var(--csf2);cursor:pointer;
+                                                   font-size:1.1rem;color:var(--ctx)">−</button>
+                                </form>
+
+                                <span style="font-weight:600;font-size:1rem;
+                                             min-width:28px;text-align:center;
+                                             color:var(--ctx)">@item.Cantidad</span>
+
+                                <form asp-action="ActualizarCantidad" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="prendaId" value="@item.PrendaId" />
+                                    <input type="hidden" name="cantidad" value="@(item.Cantidad + 1)" />
+                                    <button style="width:32px;height:32px;border-radius:8px;
+                                                   border:1.5px solid var(--cbr);
+                                                   background:var(--csf2);cursor:pointer;
+                                                   font-size:1.1rem;color:var(--ctx)">+</button>
+                                </form>
+                            </div>
+
+                            <!-- Subtotal + Quitar -->
+                            <div style="text-align:right;min-width:100px">
+                                <p style="font-family:'Playfair Display',serif;
+                                          font-size:1.15rem;color:var(--ctx);
+                                          font-weight:700;margin:0 0 .4rem">
+                                    S/ @item.Subtotal.ToString("0.00")
+                                </p>
+                                <form asp-action="Quitar" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="prendaId" value="@item.PrendaId" />
+                                    <button class="btn-lyra-danger" style="font-size:.75rem">
+                                        ✕ Quitar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Resumen -->
+            <div class="col-lg-4">
+                <div class="lyra-card" style="position:sticky;top:80px">
+                    <p style="font-family:'Playfair Display',serif;
+                               font-size:1.2rem;color:var(--ctx);
+                               margin:0 0 1.25rem;font-weight:600">
+                        Resumen del pedido
+                    </p>
+
+                    @foreach (var item in Model)
+                    {
+                        <div style="display:flex;justify-content:space-between;
+                                    font-size:.85rem;color:var(--ctx2);margin-bottom:.5rem">
+                            <span>@item.Nombre × @item.Cantidad</span>
+                            <span>S/ @item.Subtotal.ToString("0.00")</span>
+                        </div>
+                    }
+
+                    <div style="border-top:1.5px solid var(--cbr);
+                                margin:1rem 0;padding-top:1rem;
+                                display:flex;justify-content:space-between;align-items:center">
+                        <span style="font-weight:600;color:var(--ctx)">Total</span>
+                        <span style="font-family:'Playfair Display',serif;
+                                     font-size:1.5rem;color:var(--cp);font-weight:700">
+                            S/ @ViewBag.Total?.ToString("0.00")
+                        </span>
+                    </div>
+
+                    <div style="background:var(--csf2);border-radius:10px;
+                                padding:.75rem 1rem;margin-bottom:1.25rem;
+                                font-size:.78rem;color:var(--ctx2)">
+                        ✓ Prenda reservada hasta que confirmes
+                    </div>
+
+                    <a asp-action="Checkout"
+                       class="btn-lyra w-100"
+                       style="justify-content:center;padding:.9rem;font-size:1rem">
+                        Proceder al pago →
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

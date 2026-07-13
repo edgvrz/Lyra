@@ -1,0 +1,137 @@
+@model Lyra.Models.Pedido
+@using Lyra.Enums
+@{ ViewData["Title"] = "Pedido Confirmado"; }
+
+<div class="lyra-wrap-sm" style="text-align:center;padding-top:3rem">
+
+    <!-- Animación de éxito -->
+    <div style="width:90px;height:90px;border-radius:50%;
+                background:var(--grad);margin:0 auto 1.5rem;
+                display:flex;align-items:center;justify-content:center;
+                box-shadow:0 8px 32px var(--csh2);
+                animation:pop .5s cubic-bezier(.36,.07,.19,.97)">
+        <span style="font-size:2.5rem">✓</span>
+    </div>
+
+    <h1 class="lyra-title" style="font-size:2rem;margin-bottom:.4rem">
+        ¡Pedido confirmado!
+    </h1>
+    <p style="color:var(--ctx2);font-size:.95rem;margin-bottom:2rem">
+        Tu pedido fue registrado exitosamente
+    </p>
+
+    <!-- Número de pedido destacado -->
+    <div style="background:var(--grads);border:2px solid var(--cbr);
+                border-radius:18px;padding:1.5rem 2rem;margin-bottom:2rem;
+                display:inline-block">
+        <p style="font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;
+                  color:var(--ctx2);margin:0 0 .3rem">Número de pedido</p>
+        <p style="font-family:'Playfair Display',serif;font-size:1.9rem;
+                  font-weight:700;color:var(--cp);margin:0;letter-spacing:.04em">
+            @Model.NumeroPedido
+        </p>
+    </div>
+
+    <!-- Detalles -->
+    <div class="lyra-card" style="text-align:left;margin-bottom:1.25rem">
+        <p class="lyra-label mb-3">Detalle del pedido</p>
+
+        @foreach (var item in Model.Items)
+        {
+            <div style="display:flex;justify-content:space-between;align-items:center;
+                        padding:.55rem 0;border-bottom:1px solid var(--cbr)">
+                <div>
+                    <p style="font-weight:500;color:var(--ctx);margin:0;font-size:.9rem">
+                        @item.NombrePrenda
+                    </p>
+                    <p style="font-size:.75rem;color:var(--ctx2);margin:0">
+                        @(item.TiendaNombre ?? "—") · ×@item.Cantidad
+                        @if (!string.IsNullOrEmpty(item.Talla))
+                        { <span>· @item.Talla</span> }
+                    </p>
+                </div>
+                <span style="font-weight:600;color:var(--ctx)">
+                    S/ @item.Subtotal.ToString("0.00")
+                </span>
+            </div>
+        }
+
+        <div style="display:flex;justify-content:space-between;
+                    padding-top:.85rem;font-size:1.05rem">
+            <span style="font-weight:600;color:var(--ctx)">Total pagado</span>
+            <span style="font-family:'Playfair Display',serif;
+                         font-size:1.35rem;font-weight:700;color:var(--cp)">
+                S/ @Model.Total.ToString("0.00")
+            </span>
+        </div>
+    </div>
+
+    <!-- Info de método de pago y próximos pasos -->
+    <div class="lyra-card" style="text-align:left;margin-bottom:2rem">
+        <p class="lyra-label mb-3">¿Qué sigue?</p>
+
+        <div style="display:flex;flex-direction:column;gap:.85rem">
+            <div style="display:flex;gap:.85rem;align-items:flex-start">
+                <div style="width:34px;height:34px;border-radius:50%;
+                            background:var(--grad);color:#fff;
+                            display:flex;align-items:center;justify-content:center;
+                            font-size:.8rem;font-weight:700;flex-shrink:0">1</div>
+                <div>
+                    <p style="font-weight:600;color:var(--ctx);margin:0 0 .15rem;font-size:.9rem">
+                        Pedido registrado
+                    </p>
+                    <p style="font-size:.8rem;color:var(--ctx2);margin:0">
+                        Las tiendas recibirán tu solicitud
+                    </p>
+                </div>
+            </div>
+            <div style="display:flex;gap:.85rem;align-items:flex-start">
+                <div style="width:34px;height:34px;border-radius:50%;
+                            background:var(--csf2);border:2px solid var(--cbr);
+                            display:flex;align-items:center;justify-content:center;
+                            font-size:.8rem;font-weight:700;flex-shrink:0;color:var(--ctx2)">2</div>
+                <div>
+                    <p style="font-weight:600;color:var(--ctx);margin:0 0 .15rem;font-size:.9rem">
+                        La tienda te contacta
+                    </p>
+                    <p style="font-size:.8rem;color:var(--ctx2);margin:0">
+                        Coordinarán la entrega o recojo según tu método de pago:
+                        <strong>@Model.MetodoPago</strong>
+                    </p>
+                </div>
+            </div>
+            <div style="display:flex;gap:.85rem;align-items:flex-start">
+                <div style="width:34px;height:34px;border-radius:50%;
+                            background:var(--csf2);border:2px solid var(--cbr);
+                            display:flex;align-items:center;justify-content:center;
+                            font-size:.8rem;font-weight:700;flex-shrink:0;color:var(--ctx2)">3</div>
+                <div>
+                    <p style="font-weight:600;color:var(--ctx);margin:0 0 .15rem;font-size:.9rem">
+                        ¡Luce tus prendas! ✨
+                    </p>
+                    <p style="font-size:.8rem;color:var(--ctx2);margin:0">
+                        Precisamente bella, como siempre
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap">
+        <a asp-action="MisPedidos" class="btn-lyra-ghost">
+            📋 Ver mis pedidos
+        </a>
+        <a asp-controller="Cliente" asp-action="Recomendaciones"
+           class="btn-lyra">
+            ✨ Seguir comprando
+        </a>
+    </div>
+</div>
+
+<style>
+@@keyframes pop {
+    0%   { transform:scale(0); opacity:0; }
+    80%  { transform:scale(1.1); }
+    100% { transform:scale(1); opacity:1; }
+}
+</style>

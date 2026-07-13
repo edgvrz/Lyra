@@ -115,6 +115,18 @@
                 </form>
             }
 
+            <!-- CARRITO -->
+@if (Model.Stock > 0 && Model.Estado == EstadoPrenda.Disponible)
+{
+    <form asp-controller="Carrito" asp-action="Agregar"
+          method="post" style="margin-bottom:.75rem">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="prendaId" value="@Model.Id" />
+        <button class="btn-lyra w-100" style="padding:.9rem">
+            🛒 Agregar al carrito
+        </button>
+    </form>
+}
             <!-- RESERVA -->
             @if (Model.Stock > 0 && Model.Estado == EstadoPrenda.Disponible)
             {
